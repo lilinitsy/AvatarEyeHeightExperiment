@@ -37,6 +37,7 @@ AVRPawn::AVRPawn()
 	// camera setup
 	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
 	camera->SetupAttachment(vr_origin);
+	//camera->SetRelativeRotation()
 
 	// controller setup
 	// https://docs.unrealengine.com/en-US/Platforms/VR/DevelopVR/MotionController/index.html
@@ -90,6 +91,7 @@ AVRPawn::AVRPawn()
 	offsets = fill_offset_TArray("eye-height-offsets.txt");
 	for (int i = 0; i < offsets.Num(); i++)
 	{
+
 	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("OFFSETS %d: %f\n"), i, offsets[i]));
 
 	}
