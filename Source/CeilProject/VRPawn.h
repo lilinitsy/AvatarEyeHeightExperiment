@@ -32,7 +32,7 @@ public:
 	USceneComponent *skeletal_attachment_point;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Meshes")
-	USkeletalMeshComponent *standing_mesh;
+	USkeletalMeshComponent *skeletal_mesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Meshes")
 	USkeletalMeshComponent *sitting_mesh;
@@ -44,6 +44,16 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Motion Controllers")
 	UMotionControllerComponent *right_hand;
 
+
+	/////////////////
+	/// There is a chance that I won't want to have two SkeletalMeshComponents, but just one and two animsequences
+	/////////////////
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimationAsset *standing_animation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+	UAnimationAsset *sitting_animation;
 	
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
 	bool seated = false; // maybe don't edit directly, call toggle_seating() for clarity?
@@ -72,10 +82,10 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void reset_hmd_origin();
 	void toggle_seating();
-	void cycle_offset();
 	void set_thumbstick_y();
-
-
+	void set_offset();
+	float cycle_offset();
+	
 
 	
 
