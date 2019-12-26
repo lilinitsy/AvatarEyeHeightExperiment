@@ -35,8 +35,10 @@ AVRPawn::AVRPawn()
 
 
 	// camera setup
+	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
+	camera_attachment_point->SetupAttachment(vr_origin);
 	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
-	camera->SetupAttachment(vr_origin);
+	camera->SetupAttachment(camera_attachment_point);
 	//camera->SetRelativeRotation()
 
 	// controller setup
@@ -91,9 +93,7 @@ AVRPawn::AVRPawn()
 	offsets = fill_offset_TArray("eye-height-offsets.txt");
 	for (int i = 0; i < offsets.Num(); i++)
 	{
-
-	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("OFFSETS %d: %f\n"), i, offsets[i]));
-
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("OFFSETS %d: %f\n"), i, offsets[i]));
 	}
 	
 	// skeletal_mesh->SetPosition(skeletal_mesh->GetPosition() - 163.7);
@@ -163,10 +163,10 @@ float AVRPawn::cycle_offset()
 void AVRPawn::set_offset()
 {
 	// Bind the Skeletal Mesh to the camera position / rotation
-	// Camera position and orientation is dependent on vr_origin
+	// Camera position and orientation is dependent on camera_attachment_point
 
-	FVector camera_location = vr_origin->GetComponentLocation();
-	FRotator camera_rotation = vr_origin->GetComponentRotation();
+	FVector camera_location = camera_attachment_point->GetComponentLocation();
+	FRotator camera_rotation = camera_attachment_point->GetComponentRotation();
 
 	skeletal_attachment_point->SetRelativeLocation(camera_location);
 	skeletal_attachment_point->SetRelativeRotation(camera_rotation);

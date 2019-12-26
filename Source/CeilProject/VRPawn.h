@@ -24,6 +24,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UCameraComponent *camera;
 
+	UPROPERTY(EditAnywhere, Category = "Components")
+	USceneComponent *camera_attachment_point;
+
 	// Origin for HMD
 	UPROPERTY(EditAnywhere, Category = "Components")
 	USceneComponent *vr_origin;
@@ -61,6 +64,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
 	bool male_model = true;
 
+	// Distance up/down between camera and z to make the camera align with the head
 	UPROPERTY(EditAnywhere, Category = "Information")
 	float z_offset = -174.0f;
 
