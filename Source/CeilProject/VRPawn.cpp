@@ -2,6 +2,7 @@
 
 #include "VRPawn.h"
 
+#include "Components/InputComponent.h"
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"
 #include "HAL/FileManager.h"
@@ -133,6 +134,8 @@ void AVRPawn::Tick(float DeltaTime)
 void AVRPawn::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	PlayerInputComponent->BindAction("CycleOffset", IE_Released, this, &AVRPawn::cycle_offset);
+	PlayerInputComponent->BindAxis("MotionControllerRYAxis", this, &AVRPawn::set_thumbstick_y);
 
 }
 
@@ -148,19 +151,7 @@ void AVRPawn::reset_hmd_origin()
 }
 
 
-float AVRPawn::cycle_offset()
-{
-
-	// do smth with offsets here
-	int offset_index = FMath::RandRange(0, offsets.Num());
-	float offset = offsets[offset_index];
-	offsets.Remove(offset_index);
-
-	return offset;
-}
-
-
-void AVRPawn::set_offset()
+void AVRPawn::cycle_offset()
 {
 	// Bind the Skeletal Mesh to the camera position / rotation
 	// Camera position and orientation is dependent on camera_attachment_point
@@ -171,6 +162,15 @@ void AVRPawn::set_offset()
 	skeletal_attachment_point->SetRelativeLocation(camera_location);
 	skeletal_attachment_point->SetRelativeRotation(camera_rotation);
 	*/
+	// do smth with offsets here
+	int offset_index = FMath::RandRange(0, offsets.Num());
+	float offset = offsets[offset_index];
+	offsets.Remove(offset_index);
+}
+
+void AVRPawn::set_thumbstick_y(float y)
+{
+
 }
 
 
@@ -196,7 +196,7 @@ TArray<float> AVRPawn::fill_offset_TArray(FString filename)
 	TArray<float> offset_tarray;
 
 	// Load file
-	FString directory = FPaths::GameDir(); // FPaths::Combine(FPaths::GameContentDir(), "Data");
+	FString directory = FPaths::ProjectDir(); // FPaths::Combine(FPaths::GameContentDir(), "Data");
 	TArray<FString> string_offsets;
 	IPlatformFile& file = FPlatformFileManager::Get().GetPlatformFile();
 	if (file.CreateDirectory(*directory))

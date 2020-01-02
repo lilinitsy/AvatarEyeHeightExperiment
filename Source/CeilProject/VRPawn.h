@@ -86,9 +86,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void reset_hmd_origin();
 	void toggle_seating();
-	void set_thumbstick_y();
-	void set_offset();
-	float cycle_offset();
+	void set_thumbstick_y(float y);
+	void cycle_offset();
 	
 
 	
