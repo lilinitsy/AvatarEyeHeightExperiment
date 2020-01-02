@@ -91,10 +91,10 @@ AVRPawn::AVRPawn()
 
 	// Fill the offsets array
 	offsets = fill_offset_TArray("eye-height-offsets.txt");
-	for (int i = 0; i < offsets.Num(); i++)
+	/*for (int i = 0; i < offsets.Num(); i++)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("OFFSETS %d: %f\n"), i, offsets[i]));
-	}
+	}*/
 	
 	// skeletal_mesh->SetPosition(skeletal_mesh->GetPosition() - 163.7);
 	/*FVector skeletal_position = skeletal_mesh->GetSkeletalCenterOfMass();
@@ -125,7 +125,7 @@ void AVRPawn::Tick(float DeltaTime)
 	//const FVector Direction = FRotationMatrix(Rotation).GetScaledAxis(EAxis::Y);
 	//UE_LOG(LogTemp, Warning, TEXT("Direction: (%f %f %f)\n"), Direction.X, Direction.Y, Direction.Z);
 
-
+	// Read input
 
 }
 
@@ -164,13 +164,13 @@ void AVRPawn::set_offset()
 {
 	// Bind the Skeletal Mesh to the camera position / rotation
 	// Camera position and orientation is dependent on camera_attachment_point
-
+	/*
 	FVector camera_location = camera_attachment_point->GetComponentLocation();
 	FRotator camera_rotation = camera_attachment_point->GetComponentRotation();
 
 	skeletal_attachment_point->SetRelativeLocation(camera_location);
 	skeletal_attachment_point->SetRelativeRotation(camera_rotation);
-
+	*/
 }
 
 

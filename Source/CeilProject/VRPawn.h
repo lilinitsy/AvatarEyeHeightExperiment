@@ -24,12 +24,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	UCameraComponent *camera;
 
-	UPROPERTY(EditAnywhere, Category = "Components")
-	USceneComponent *camera_attachment_point;
-
 	// Origin for HMD
 	UPROPERTY(EditAnywhere, Category = "Components")
 	USceneComponent *vr_origin;
+
+	UPROPERTY(EditAnywhere, Category = "Components")
+	USceneComponent *camera_attachment_point;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Meshes")
 	USceneComponent *skeletal_attachment_point;
