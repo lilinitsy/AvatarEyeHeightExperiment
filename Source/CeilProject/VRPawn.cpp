@@ -165,7 +165,7 @@ void AVRPawn::cycle_offset()
 	// do smth with offsets here
 	int offset_index = FMath::RandRange(0, offsets.Num());
 	float offset = offsets[offset_index];
-	offsets.Remove(offset_index);
+	offsets.RemoveAt(offset_index);
 }
 
 void AVRPawn::set_thumbstick_y(float y)
