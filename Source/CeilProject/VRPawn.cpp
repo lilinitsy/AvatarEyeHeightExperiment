@@ -173,9 +173,9 @@ void AVRPawn::cycle_offset()
 	// Scale model scale appropriately and move the camera to the new offset
 	skeletal_mesh->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
 	camera_attachment_point->SetRelativeLocation(FVector(0, 0, original_eye_height + offset));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("OFFSET: %f\n"), offset));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("ORIGINAL EYE HEIGHT: %f\n"), original_eye_height));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("CAMERA LOCATION: %f %f %f\n"), camera_attachment_point->GetComponentLocation().X, camera_attachment_point->GetComponentLocation().Y, camera_attachment_point->GetComponentLocation().Z));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("OFFSET: %f\n"), offset));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("ORIGINAL EYE HEIGHT: %f\n"), original_eye_height));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("CAMERA LOCATION: %f %f %f\n"), camera_attachment_point->GetComponentLocation().X, camera_attachment_point->GetComponentLocation().Y, camera_attachment_point->GetComponentLocation().Z));
 
 
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("MODEL Z DIM: %f\n"), model_z_dimension));
@@ -186,7 +186,7 @@ void AVRPawn::cycle_offset()
 
 void AVRPawn::set_thumbstick_y(float y)
 {
-
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Motion Controller thumbstick y: %f\n", y)));
 }
 
 

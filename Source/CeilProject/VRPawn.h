@@ -34,6 +34,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Meshes")
 	USceneComponent *skeletal_attachment_point;
 
+	// Look into USkeletalMesh sockets for bone transforms -> problem doing it programmatically is have to abandon this animation methodology
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Meshes")
 	USkeletalMeshComponent *skeletal_mesh;
 
