@@ -186,7 +186,7 @@ void AVRPawn::cycle_offset()
 
 void AVRPawn::set_thumbstick_y(float y)
 {
-
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Motion Controller thumbstick y: %f\n"), y));
 }
 
 
