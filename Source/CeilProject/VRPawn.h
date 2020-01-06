@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+	// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -73,6 +73,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
 	float height;
+
+	UPROPERTY(VisibleAnywhere, Category = "Information")
+	float original_eye_height;
 	
 	UPROPERTY(VisibleAnywhere, Category = "General Parameters")
 	TArray<float> offsets;

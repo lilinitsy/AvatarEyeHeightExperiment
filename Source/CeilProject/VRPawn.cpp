@@ -106,6 +106,13 @@ AVRPawn::AVRPawn()
 	*/
 
 	// same thing for sitting_mesh
+
+
+
+
+
+	//original_eye_height = camera_attachment_point->GetComponentLocation().Z - skeletal_attachment_point->GetComponentLocation().Z;
+	original_eye_height = camera_attachment_point->GetComponentLocation().Z;
 }
 
 
@@ -153,19 +160,28 @@ void AVRPawn::reset_hmd_origin()
 
 void AVRPawn::cycle_offset()
 {
-	// Bind the Skeletal Mesh to the camera position / rotation
-	// Camera position and orientation is dependent on camera_attachment_point
-	/*
-	FVector camera_location = camera_attachment_point->GetComponentLocation();
-	FRotator camera_rotation = camera_attachment_point->GetComponentRotation();
-
-	skeletal_attachment_point->SetRelativeLocation(camera_location);
-	skeletal_attachment_point->SetRelativeRotation(camera_rotation);
-	*/
-	// do smth with offsets here
+	// Get offset and remove it from list
 	int offset_index = FMath::RandRange(0, offsets.Num());
 	float offset = offsets[offset_index];
 	offsets.RemoveAt(offset_index);
+	
+	// Calculate new model scale
+	float model_z_dimension = vr_origin->GetComponentLocation().Z + skeletal_attachment_point->GetRelativeTransform().GetLocation().Z;
+	float new_model_z_dimension = model_z_dimension + offset;
+	float new_model_z_scale = new_model_z_dimension / model_z_dimension;
+	
+	// Scale model scale appropriately and move the camera to the new offset
+	skeletal_mesh->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
+	camera_attachment_point->SetRelativeLocation(FVector(0, 0, original_eye_height + offset));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("OFFSET: %f\n"), offset));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("ORIGINAL EYE HEIGHT: %f\n"), original_eye_height));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("CAMERA LOCATION: %f %f %f\n"), camera_attachment_point->GetComponentLocation().X, camera_attachment_point->GetComponentLocation().Y, camera_attachment_point->GetComponentLocation().Z));
+
+
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("MODEL Z DIM: %f\n"), model_z_dimension));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("MODEL Z SCALE: %f\n"), new_model_z_scale));
+
+
 }
 
 void AVRPawn::set_thumbstick_y(float y)
