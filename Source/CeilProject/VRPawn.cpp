@@ -192,13 +192,16 @@ void AVRPawn::set_thumbstick_y(float y)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Motion Controller thumbstick y: %f\n"), y));
 		float dt = GetWorld()->GetDeltaSeconds();
-		float camera_movement = 1.0f * y * dt; // 10 is to scale y 
+		float camera_movement = thumbstick_speed_scale * y * dt; // 10 is to scale y 
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Camera Movement: %f\n"), camera_movement));
 
-		float camera_z = camera_attachment_point->GetComponentLocation().Z;
-		camera_attachment_point->SetRelativeLocation(FVector(0, 0, camera_movement));
+		FVector camera_location = camera_attachment_point->GetComponentLocation();
 
+		//camera_attachment_point->SetRelativeLocation(FVector(0, 0, camera_movement));
+		camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, camera_location.Z + camera_movement));
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Camera Z Position: %f\n"), camera_attachment_point->GetComponentLocation().Z));
+		UE_LOG(LogTemp, Log, TEXT("Camera Z Position: %f\n"), camera_attachment_point->GetComponentLocation().Z);
+		UE_LOG(LogTemp, Log, TEXT("camera Movement: %f\n"), camera_movement);
 	}
 }
 

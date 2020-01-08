@@ -81,8 +81,11 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "General Parameters")
 	TArray<float> offsets;
 
-	UPROPERTY(VisibleAnywhere, Category = "General Parameters")
+	UPROPERTY(VisibleAnywhere, Category = "Motion Parameters")
 	float thumbstick_y;
+
+	UPROPERTY(EditAnywhere, Category = "Motion Parameters")
+	float thumbstick_speed_scale;
 
 
 	AVRPawn();
