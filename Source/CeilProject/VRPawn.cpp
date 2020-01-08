@@ -94,27 +94,6 @@ AVRPawn::AVRPawn()
 
 	// Fill the offsets array
 	offsets = fill_offset_TArray("eye-height-offsets.txt");
-	/*for (int i = 0; i < offsets.Num(); i++)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("OFFSETS %d: %f\n"), i, offsets[i]));
-	}*/
-	
-	// skeletal_mesh->SetPosition(skeletal_mesh->GetPosition() - 163.7);
-	/*FVector skeletal_position = skeletal_mesh->GetSkeletalCenterOfMass();
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("BEFORE GETSKELETALCENTEROFMASS: %f %f %f\n"), skeletal_position.X, skeletal_position.Y, skeletal_position.Z));
-	skeletal_position.Z -= 163.7f;
-	skeletal_mesh->GetSkeletalCenterOfMass() = skeletal_position;
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("BEFORE GETSKELETALCENTEROFMASS: %f %f %f\n"), skeletal_mesh->GetSkeletalCenterOfMass().X, skeletal_mesh->GetSkeletalCenterOfMass().Y, skeletal_mesh->GetSkeletalCenterOfMass().Z));
-	*/
-
-	// same thing for sitting_mesh
-
-
-
-
-
-	//original_eye_height = camera_attachment_point->GetComponentLocation().Z - skeletal_attachment_point->GetComponentLocation().Z;
-	original_eye_height = camera_attachment_point->GetComponentLocation().Z;
 }
 
 
@@ -122,7 +101,7 @@ AVRPawn::AVRPawn()
 void AVRPawn::BeginPlay()
 {
 	Super::BeginPlay();
-
+	original_eye_height = camera_attachment_point->GetComponentLocation().Z;
 }
 
 // Called every frame
@@ -172,9 +151,18 @@ void AVRPawn::cycle_offset()
 	float new_model_z_dimension = model_z_dimension + offset;
 	float new_model_z_scale = new_model_z_dimension / model_z_dimension;
 	
-	// Scale model scale appropriately and move the camera to the new offset
+	// BUGGY: Scale model 
 	skeletal_mesh->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
-	camera_attachment_point->SetWorldLocation(FVector(0, 0, original_eye_height + offset));
+
+	// Move camera
+	FVector camera_location = camera_attachment_point->GetComponentLocation();
+	UE_LOG(LogTemp, Log, TEXT("cycle_offset: Original Camera Z Position: %f\n"), original_eye_height);
+	UE_LOG(LogTemp, Log, TEXT("cycle_offset: Old Camera Z Position: %f\n"), camera_location.Z);
+
+	camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_eye_height + offset));
+
+	UE_LOG(LogTemp, Log, TEXT("cycle_offset: New Camera Z Position: %f\n"), camera_location.Z);
+	UE_LOG(LogTemp, Log, TEXT("cycle_offset: Offset: %f\n"), offset);
 }
 
 void AVRPawn::set_thumbstick_y(float y)
