@@ -174,34 +174,20 @@ void AVRPawn::cycle_offset()
 	
 	// Scale model scale appropriately and move the camera to the new offset
 	skeletal_mesh->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
-	camera_attachment_point->SetRelativeLocation(FVector(0, 0, original_eye_height + offset));
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("OFFSET: %f\n"), offset));
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("ORIGINAL EYE HEIGHT: %f\n"), original_eye_height));
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("CAMERA LOCATION: %f %f %f\n"), camera_attachment_point->GetComponentLocation().X, camera_attachment_point->GetComponentLocation().Y, camera_attachment_point->GetComponentLocation().Z));
-
-
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("MODEL Z DIM: %f\n"), model_z_dimension));
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("MODEL Z SCALE: %f\n"), new_model_z_scale));
-
-
+	camera_attachment_point->SetWorldLocation(FVector(0, 0, original_eye_height + offset));
 }
 
 void AVRPawn::set_thumbstick_y(float y)
 {
 	if (FGenericPlatformMath::Abs(y) > 0.1f)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Motion Controller thumbstick y: %f\n"), y));
 		float dt = GetWorld()->GetDeltaSeconds();
 		float camera_movement = thumbstick_speed_scale * y * dt; // 10 is to scale y 
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Camera Movement: %f\n"), camera_movement));
-
 		FVector camera_location = camera_attachment_point->GetComponentLocation();
-
-		//camera_attachment_point->SetRelativeLocation(FVector(0, 0, camera_movement));
 		camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, camera_location.Z + camera_movement));
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Camera Z Position: %f\n"), camera_attachment_point->GetComponentLocation().Z));
-		UE_LOG(LogTemp, Log, TEXT("Camera Z Position: %f\n"), camera_attachment_point->GetComponentLocation().Z);
-		UE_LOG(LogTemp, Log, TEXT("camera Movement: %f\n"), camera_movement);
+		
+		UE_LOG(LogTemp, Log, TEXT("set_thumbstick_y: Camera Z Position: %f\n"), camera_attachment_point->GetComponentLocation().Z);
+		UE_LOG(LogTemp, Log, TEXT("set_thumbstick_y: Camera Movement: %f\n"), camera_movement);
 	}
 }
 
