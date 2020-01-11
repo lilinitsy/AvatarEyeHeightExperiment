@@ -101,7 +101,7 @@ AVRPawn::AVRPawn()
 void AVRPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	original_eye_height = camera_attachment_point->GetComponentLocation().Z;
+	original_camera_location = camera_attachment_point->GetComponentLocation();
 }
 
 // Called every frame
@@ -146,23 +146,21 @@ void AVRPawn::cycle_offset()
 	float offset = offsets[offset_index];
 	offsets.RemoveAt(offset_index);
 	
-	// Calculate new model scale
+	// Calculate new model scale - Possibly buggy?
 	float model_z_dimension = vr_origin->GetComponentLocation().Z + skeletal_attachment_point->GetRelativeTransform().GetLocation().Z;
 	float new_model_z_dimension = model_z_dimension + offset;
 	float new_model_z_scale = new_model_z_dimension / model_z_dimension;
-	
-	// BUGGY: Scale model 
 	skeletal_mesh->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
-
+	
 	// Move camera
 	FVector camera_location = camera_attachment_point->GetComponentLocation();
-	UE_LOG(LogTemp, Log, TEXT("cycle_offset: Original Camera Z Position: %f\n"), original_eye_height);
-	UE_LOG(LogTemp, Log, TEXT("cycle_offset: Old Camera Z Position: %f\n"), camera_location.Z);
+	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Original Camera Z Position: %f\n"), original_camera_location.Z);c
+	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Old Camera Z Position: %f\n"), camera_location.Z);
 
-	camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_eye_height + offset));
+	camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
 
-	UE_LOG(LogTemp, Log, TEXT("cycle_offset: New Camera Z Position: %f\n"), camera_location.Z);
-	UE_LOG(LogTemp, Log, TEXT("cycle_offset: Offset: %f\n"), offset);
+	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: New Camera Z Position: %f\n"), camera_location.Z);
+	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Offset: %f\n"), offset);
 }
 
 void AVRPawn::set_thumbstick_y(float y)

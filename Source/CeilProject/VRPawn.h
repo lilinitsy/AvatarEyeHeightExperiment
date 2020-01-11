@@ -75,8 +75,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
 	float height;
 
+	// original_camera_location.Z represents original camera_eye_height
 	UPROPERTY(VisibleAnywhere, Category = "Information")
-	float original_eye_height;
+	FVector original_camera_location;
 	
 	UPROPERTY(VisibleAnywhere, Category = "General Parameters")
 	TArray<float> offsets;
