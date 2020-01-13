@@ -69,6 +69,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Information")
 	float z_offset = -174.0f;
 
+	// Possibly will be irrelevant
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
 	float foot_size;
 
@@ -96,11 +97,12 @@ public:
 	void toggle_seating();
 	void set_thumbstick_y(float y);
 	void cycle_offset();
-	
+	void record_guess();
 
 	
 
 private:
 	TArray<float> fill_offset_TArray(FString path);
 	
+
 };

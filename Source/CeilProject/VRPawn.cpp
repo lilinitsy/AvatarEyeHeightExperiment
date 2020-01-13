@@ -123,8 +123,8 @@ void AVRPawn::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	PlayerInputComponent->BindAction("CycleOffset", IE_Released, this, &AVRPawn::cycle_offset);
+	PlayerInputComponent->BindAction("RecordGuess", IE_Released, this, &AVRPawn::record_guess);
 	PlayerInputComponent->BindAxis("MotionControllerRYAxis", this, &AVRPawn::set_thumbstick_y);
-
 }
 
 
@@ -161,6 +161,16 @@ void AVRPawn::cycle_offset()
 
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: New Camera Z Position: %f\n"), camera_location.Z);
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Offset: %f\n"), offset);
+
+
+}
+
+void AVRPawn::record_guess()
+{
+	// Do we measure it based on offset or based on true location?
+	// How do we define true location while scaling?
+	float guess_height = camera->GetRelativeTransform().GetLocation().Z;
+	UE_LOG(LogTemp, Log, TEXT("Testing guess height stuff: %f\n"), guess_height);
 }
 
 void AVRPawn::set_thumbstick_y(float y)
