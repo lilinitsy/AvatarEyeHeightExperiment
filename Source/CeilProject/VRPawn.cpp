@@ -108,14 +108,6 @@ void AVRPawn::BeginPlay()
 void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	// Controller->GetControlRotation() causes crash????
-	//FRotator Rotation = Controller->GetControlRotation();
-	//const FVector Direction = FRotationMatrix(Rotation).GetScaledAxis(EAxis::Y);
-	//UE_LOG(LogTemp, Warning, TEXT("Direction: (%f %f %f)\n"), Direction.X, Direction.Y, Direction.Z);
-
-	// Read input
-
 }
 
 // Called to bind functionality to input
@@ -162,8 +154,26 @@ void AVRPawn::cycle_offset()
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: New Camera Z Position: %f\n"), camera_location.Z);
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Offset: %f\n"), offset);
 
+	FString save_directory = FPaths::ProjectDir();
+	FString save_file = FString("data.txt");
+	IPlatformFile& file = FPlatformFileManager::Get().GetPlatformFile();
+
+	if (file.CreateDirectory(*save_directory))
+	{
+		FString absolute_file_path = save_directory + "/" + save_file;
+		FString offset_string = FString::SanitizeFloat(offset);
+		FFileHelper::SaveStringToFile(offset_string, *save_file, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
+
+		UE_LOG(LogTemp, Log, TEXT("File directory stuff maybe working\n"));
+	}
+}
+
+
+void write_data_to_file()
+{
 
 }
+
 
 void AVRPawn::record_guess()
 {
@@ -210,7 +220,7 @@ TArray<float> AVRPawn::fill_offset_TArray(FString filename)
 	TArray<float> offset_tarray;
 
 	// Load file
-	FString directory = FPaths::ProjectDir(); // FPaths::Combine(FPaths::GameContentDir(), "Data");
+	FString directory = FPaths::ProjectDir();
 	TArray<FString> string_offsets;
 	IPlatformFile& file = FPlatformFileManager::Get().GetPlatformFile();
 	if (file.CreateDirectory(*directory))

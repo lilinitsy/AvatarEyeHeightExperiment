@@ -98,6 +98,7 @@ public:
 	void set_thumbstick_y(float y);
 	void cycle_offset();
 	void record_guess();
+	void write_data_to_file();
 
 	
 
