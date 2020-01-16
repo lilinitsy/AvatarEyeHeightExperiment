@@ -102,6 +102,7 @@ void AVRPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	original_camera_location = camera_attachment_point->GetComponentLocation();
+
 }
 
 // Called every frame
@@ -149,10 +150,10 @@ void AVRPawn::cycle_offset()
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Original Camera Z Position: %f\n"), original_camera_location.Z);c
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Old Camera Z Position: %f\n"), camera_location.Z);
 
-	camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
+	//camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
 
-	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: New Camera Z Position: %f\n"), camera_location.Z);
-	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Offset: %f\n"), offset);
+	UE_LOG(LogTemp, Log, TEXT("cycle_offset: New Camera Z Position: %f\n"), camera_location.Z);
+	UE_LOG(LogTemp, Log, TEXT("cycle_offset: Offset: %f\n"), offset);
 
 	FString save_directory = FPaths::ProjectDir();
 	FString save_file = FString("data.txt");
@@ -188,7 +189,7 @@ void AVRPawn::set_thumbstick_y(float y)
 	if (FGenericPlatformMath::Abs(y) > 0.1f)
 	{
 		float dt = GetWorld()->GetDeltaSeconds();
-		float camera_movement = thumbstick_speed_scale * y * dt; // 10 is to scale y 
+		float camera_movement = 5.0f * thumbstick_speed_scale * y * dt; // 10 is to scale y 
 		FVector camera_location = camera_attachment_point->GetComponentLocation();
 		camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, camera_location.Z + camera_movement));
 		
