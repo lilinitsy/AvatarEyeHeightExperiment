@@ -23,11 +23,18 @@ AVRPawn::AVRPawn()
 	vr_origin = CreateDefaultSubobject<USceneComponent>(TEXT("vr_origin"));
 	vr_origin->SetupAttachment(RootComponent);
 
+	// camera setup
+	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
+	camera_attachment_point->SetupAttachment(vr_origin);
+	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
+	camera->SetupAttachment(camera_attachment_point);
+
+	// TRY converting to UStaticMeshComponent
 	// skeletal meshes
 	skeletal_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("skeletal_attachment_point"));
-	skeletal_attachment_point->SetupAttachment(vr_origin);
+	skeletal_attachment_point->SetupAttachment(camera);
 	FVector relative_skeletal_location = FVector(0.0f, 0.0f, z_offset);
-	skeletal_attachment_point->SetRelativeLocation(relative_skeletal_location);
+	//skeletal_attachment_point->SetRelativeLocation(relative_skeletal_location);
 
 	skeletal_mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("skeletal_mesh"));
 	skeletal_mesh->SetupAttachment(skeletal_attachment_point);
@@ -36,13 +43,6 @@ AVRPawn::AVRPawn()
 
 	// same code for sitting mesh setup
 
-
-	// camera setup
-	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
-	camera_attachment_point->SetupAttachment(vr_origin);
-	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
-	camera->SetupAttachment(camera_attachment_point);
-	//camera->SetRelativeRotation()
 
 	// controller setup
 	// https://docs.unrealengine.com/en-US/Platforms/VR/DevelopVR/MotionController/index.html
@@ -150,7 +150,7 @@ void AVRPawn::cycle_offset()
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Original Camera Z Position: %f\n"), original_camera_location.Z);c
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Old Camera Z Position: %f\n"), camera_location.Z);
 
-	//camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
+	camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
 
 	UE_LOG(LogTemp, Log, TEXT("cycle_offset: New Camera Z Position: %f\n"), camera_location.Z);
 	UE_LOG(LogTemp, Log, TEXT("cycle_offset: Offset: %f\n"), offset);
