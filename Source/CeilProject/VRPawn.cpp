@@ -36,12 +36,23 @@ AVRPawn::AVRPawn()
 
 	// same code for sitting mesh setup
 
+	
 
 	// camera setup
-	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
+	/*camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
 	camera_attachment_point->SetupAttachment(vr_origin);
 	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
+	//camera->SetupAttachment(camera_attachment_point);
+	camera->AttachTo(skeletal_mesh, "cc_base_r_eye");
+	camera->SetRelativeLocation(FVector(0.0f, 0.0f, -original_camera_height));
+	*/
+
+	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
+	camera_attachment_point->AttachTo(skeletal_mesh, "cc_base_r_eye");
+	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
 	camera->SetupAttachment(camera_attachment_point);
+
+
 	//camera->SetRelativeRotation()
 
 	// controller setup
@@ -101,13 +112,16 @@ AVRPawn::AVRPawn()
 void AVRPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	original_camera_location = camera_attachment_point->GetComponentLocation();
+	original_camera_location = camera_attachment_point->GetComponentLocation();	
 }
 
 // Called every frame
 void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	UE_LOG(LogTemp, Log, TEXT("Current camera height: %f\n"), camera->GetRelativeTransform().GetLocation().Z);
+	camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, -original_camera_height));
+
 }
 
 // Called to bind functionality to input
@@ -131,6 +145,16 @@ void AVRPawn::reset_hmd_origin()
 }
 
 
+void AVRPawn::scale_model(float offset)
+{
+	// Calculate new model scale - Possibly buggy?
+	float new_model_z_dimension = original_avatar_height + offset;
+	float new_model_z_scale = new_model_z_dimension / original_avatar_height;
+	//skeletal_mesh->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
+	skeletal_attachment_point->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
+}
+
+
 void AVRPawn::cycle_offset()
 {
 	// Get offset and remove it from list
@@ -138,18 +162,15 @@ void AVRPawn::cycle_offset()
 	float offset = offsets[offset_index];
 	offsets.RemoveAt(offset_index);
 	
-	// Calculate new model scale - Possibly buggy?
-	float model_z_dimension = vr_origin->GetComponentLocation().Z + skeletal_attachment_point->GetRelativeTransform().GetLocation().Z;
-	float new_model_z_dimension = model_z_dimension + offset;
-	float new_model_z_scale = new_model_z_dimension / model_z_dimension;
-	skeletal_mesh->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
-	
+		
+	scale_model(offset);
+
 	// Move camera
 	FVector camera_location = camera_attachment_point->GetComponentLocation();
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Original Camera Z Position: %f\n"), original_camera_location.Z);c
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Old Camera Z Position: %f\n"), camera_location.Z);
 
-	camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
+	//camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
 
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: New Camera Z Position: %f\n"), camera_location.Z);
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Offset: %f\n"), offset);

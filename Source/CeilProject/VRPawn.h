@@ -73,8 +73,17 @@ public:
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
 	float foot_size;
 
+	UPROPERTY(VisibleAnywhere, Category = "Information")
+	float original_avatar_height = 183.0f;
+
+	UPROPERTY(VisibleAnywhere, Category = "Information")
+	float original_avatar_eyeball_height = 172.666870f;
+
+	UPROPERTY(EditAnywhere, Category = "Information")
+	float original_camera_height;
+
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
-	float height;
+	float floor_height;
 
 	// original_camera_location.Z represents original camera_eye_height
 	UPROPERTY(VisibleAnywhere, Category = "Information")
@@ -99,6 +108,8 @@ public:
 	void cycle_offset();
 	void record_guess();
 	void write_data_to_file();
+	void scale_model(float offset);
+
 
 	
 
