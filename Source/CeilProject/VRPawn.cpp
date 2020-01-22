@@ -24,9 +24,16 @@ AVRPawn::AVRPawn()
 	vr_origin->SetupAttachment(RootComponent);
 
 
+	// camera setup
+	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
+	camera_attachment_point->SetupAttachment(skeletal_mesh);
+	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
+	camera->SetupAttachment(camera_attachment_point);
+
+
 	// skeletal meshes
 	skeletal_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("skeletal_attachment_point"));
-	skeletal_attachment_point->SetupAttachment(vr_origin);
+	skeletal_attachment_point->SetupAttachment(camera);
 	FVector relative_skeletal_location = FVector(0.0f, 0.0f, z_offset);
 	//skeletal_attachment_point->SetRelativeLocation(relative_skeletal_location);
 
@@ -36,11 +43,6 @@ AVRPawn::AVRPawn()
 	skeletal_mesh->SetMobility(EComponentMobility::Movable);
 
 
-	// camera setup
-	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
-	camera_attachment_point->SetupAttachment(skeletal_mesh);
-	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
-	camera->SetupAttachment(camera_attachment_point);
 
 	// controller setup
 	// https://docs.unrealengine.com/en-US/Platforms/VR/DevelopVR/MotionController/index.html
