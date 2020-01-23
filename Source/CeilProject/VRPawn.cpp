@@ -23,14 +23,6 @@ AVRPawn::AVRPawn()
 	vr_origin = CreateDefaultSubobject<USceneComponent>(TEXT("vr_origin"));
 	vr_origin->SetupAttachment(RootComponent);
 
-
-	// camera setup
-	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
-	camera_attachment_point->SetupAttachment(skeletal_mesh);
-	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
-	camera->SetupAttachment(camera_attachment_point);
-
-
 	// skeletal meshes
 	skeletal_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("skeletal_attachment_point"));
 	skeletal_attachment_point->SetupAttachment(camera);
