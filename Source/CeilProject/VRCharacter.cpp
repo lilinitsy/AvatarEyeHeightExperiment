@@ -30,7 +30,6 @@ AVRCharacter::AVRCharacter()
 
 	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
 	//camera->AttachToComponent(vr_origin, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true));
-	vr_origin->SetupAttachment(vr_origin);
 
 	//left_hand = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("left_hand"));
 	//left_hand->MotionSource = EControllerHand::Left;
