@@ -38,9 +38,9 @@ AVRPawn::AVRPawn()
 	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
 	camera_attachment_point->SetupAttachment(vr_origin);
 	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
-	//camera->SetupAttachment(camera_attachment_point);
+	camera->SetupAttachment(camera_attachment_point);
 	//camera->AttachTo(skeletal_mesh, "cc_base_r_eye");
-	camera->AttachToComponent(skeletal_mesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, "cc_base_r_eye");
+	//camera->AttachToComponent(skeletal_mesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, "cc_base_r_eye");
 	//camera->SetRelativeLocation(FVector(0.0f, 0.0f, -original_camera_height));
 
 
@@ -119,6 +119,12 @@ void AVRPawn::Tick(float DeltaTime)
 
 	UE_LOG(LogTemp, Log, TEXT("Current camera height: %f\n"), camera->GetComponentLocation().Z - floor_height);
 	//camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, -original_camera_height));
+
+
+	float scale = (camera->GetComponentLocation().Z - floor_height) / original_avatar_eyeball_height;
+
+	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale, scale));
+
 
 }
 
