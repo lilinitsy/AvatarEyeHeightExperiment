@@ -119,13 +119,6 @@ void AVRPawn::Tick(float DeltaTime)
 
 	UE_LOG(LogTemp, Log, TEXT("Current camera height: %f\n"), camera->GetComponentLocation().Z - floor_height);
 	//camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, -original_camera_height));
-
-
-	float scale = (camera->GetComponentLocation().Z - floor_height) / original_avatar_eyeball_height;
-
-	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale, scale));
-
-
 }
 
 // Called to bind functionality to input
@@ -152,10 +145,14 @@ void AVRPawn::reset_hmd_origin()
 void AVRPawn::scale_model(float offset)
 {
 	// Calculate new model scale - Possibly buggy?
-	float new_model_z_dimension = original_avatar_height + offset;
+	/*float new_model_z_dimension = original_avatar_height + offset;
 	float new_model_z_scale = new_model_z_dimension / original_avatar_height;
 	//skeletal_mesh->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
 	skeletal_attachment_point->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
+	*/
+
+	float scale = (original_camera_height + offset) / original_avatar_eyeball_height;
+	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale, scale));
 }
 
 
@@ -174,7 +171,7 @@ void AVRPawn::cycle_offset()
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Original Camera Z Position: %f\n"), original_camera_location.Z);c
 	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Old Camera Z Position: %f\n"), camera_location.Z);
 
-	//camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
+	camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
 
 	UE_LOG(LogTemp, Log, TEXT("cycle_offset: New Camera Z Position: %f\n"), camera_location.Z);
 	UE_LOG(LogTemp, Log, TEXT("cycle_offset: Offset: %f\n"), offset);
