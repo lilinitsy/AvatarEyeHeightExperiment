@@ -25,7 +25,7 @@ AVRPawn::AVRPawn()
 
 	// skeletal meshes
 	skeletal_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("skeletal_attachment_point"));
-	skeletal_attachment_point->SetupAttachment(camera);
+	skeletal_attachment_point->SetupAttachment(vr_origin);
 	FVector relative_skeletal_location = FVector(0.0f, 0.0f, z_offset);
 	//skeletal_attachment_point->SetRelativeLocation(relative_skeletal_location);
 
@@ -35,19 +35,20 @@ AVRPawn::AVRPawn()
 	skeletal_mesh->SetMobility(EComponentMobility::Movable);
 
 	// camera setup
-	/*camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
+	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
 	camera_attachment_point->SetupAttachment(vr_origin);
 	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
 	//camera->SetupAttachment(camera_attachment_point);
-	camera->AttachTo(skeletal_mesh, "cc_base_r_eye");
-	camera->SetRelativeLocation(FVector(0.0f, 0.0f, -original_camera_height));
-	*/
+	//camera->AttachTo(skeletal_mesh, "cc_base_r_eye");
+	camera->AttachToComponent(skeletal_mesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, "cc_base_r_eye");
+	//camera->SetRelativeLocation(FVector(0.0f, 0.0f, -original_camera_height));
 
-	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
+
+	/*camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
 	camera_attachment_point->AttachTo(skeletal_mesh, "cc_base_r_eye");
 	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
 	camera->SetupAttachment(camera_attachment_point);
-
+	*/
 
 	//camera->SetRelativeRotation()
 
@@ -75,7 +76,7 @@ AVRPawn::AVRPawn()
 		{
 			skeletal_mesh->SetSkeletalMesh(skeletal_mesh_asset.Object);
 
-			
+
 		}
 	}
 
@@ -116,8 +117,8 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	UE_LOG(LogTemp, Log, TEXT("Current camera height: %f\n"), camera->GetRelativeTransform().GetLocation().Z);
-	camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, -original_camera_height));
+	UE_LOG(LogTemp, Log, TEXT("Current camera height: %f\n"), camera->GetComponentLocation().Z - floor_height);
+	//camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, -original_camera_height));
 
 }
 
@@ -158,8 +159,8 @@ void AVRPawn::cycle_offset()
 	int offset_index = FMath::RandRange(0, offsets.Num());
 	float offset = offsets[offset_index];
 	offsets.RemoveAt(offset_index);
-	
-		
+
+
 	scale_model(offset);
 
 	// Move camera
@@ -209,7 +210,7 @@ void AVRPawn::set_thumbstick_y(float y)
 		float camera_movement = 5.0f * thumbstick_speed_scale * y * dt; // 10 is to scale y 
 		FVector camera_location = camera_attachment_point->GetComponentLocation();
 		camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, camera_location.Z + camera_movement));
-		
+
 		UE_LOG(LogTemp, Log, TEXT("set_thumbstick_y: Camera Z Position: %f\n"), camera_attachment_point->GetComponentLocation().Z);
 		UE_LOG(LogTemp, Log, TEXT("set_thumbstick_y: Camera Movement: %f\n"), camera_movement);
 	}

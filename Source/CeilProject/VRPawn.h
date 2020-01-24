@@ -1,4 +1,4 @@
-	// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -13,40 +13,40 @@
 UCLASS()
 class CEILPROJECT_API AVRPawn : public APawn
 {
-	GENERATED_BODY()	
+	GENERATED_BODY()
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 
 	UPROPERTY(EditAnywhere, Category = "Components")
-	UCameraComponent *camera;
+		UCameraComponent *camera;
 
 	// Origin for HMD
 	UPROPERTY(EditAnywhere, Category = "Components")
-	USceneComponent *vr_origin;
+		USceneComponent *vr_origin;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
-	USceneComponent *camera_attachment_point;
+		USceneComponent *camera_attachment_point;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Meshes")
-	USceneComponent *skeletal_attachment_point;
+		USceneComponent *skeletal_attachment_point;
 
 	// Look into USkeletalMesh sockets for bone transforms -> problem doing it programmatically is have to abandon this animation methodology
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Meshes")
-	USkeletalMeshComponent *skeletal_mesh;
+		USkeletalMeshComponent *skeletal_mesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Meshes")
-	USkeletalMeshComponent *sitting_mesh;
+		USkeletalMeshComponent *sitting_mesh;
 
 	// CONTROLLERS
 	UPROPERTY(VisibleAnywhere, Category = "Motion Controllers")
-	UMotionControllerComponent *left_hand;
+		UMotionControllerComponent *left_hand;
 
 	UPROPERTY(VisibleAnywhere, Category = "Motion Controllers")
-	UMotionControllerComponent *right_hand;
+		UMotionControllerComponent *right_hand;
 
 
 	/////////////////
@@ -54,49 +54,49 @@ public:
 	/////////////////
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
-	UAnimationAsset *standing_animation;
+		UAnimationAsset *standing_animation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
-	UAnimationAsset *sitting_animation;
-	
-	UPROPERTY(EditAnywhere, Category = "General Parameters")
-	bool seated = false; // maybe don't edit directly, call toggle_seating() for clarity?
+		UAnimationAsset *sitting_animation;
 
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
-	bool male_model = true;
+		bool seated = false; // maybe don't edit directly, call toggle_seating() for clarity?
+
+	UPROPERTY(EditAnywhere, Category = "General Parameters")
+		bool male_model = true;
 
 	// Distance up/down between camera and z to make the camera align with the head
 	UPROPERTY(EditAnywhere, Category = "Information")
-	float z_offset = -174.0f;
+		float z_offset = -174.0f;
 
 	// Possibly will be irrelevant
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
-	float foot_size;
+		float foot_size;
 
 	UPROPERTY(VisibleAnywhere, Category = "Information")
-	float original_avatar_height = 183.0f;
+		float original_avatar_height = 183.0f;
 
 	UPROPERTY(VisibleAnywhere, Category = "Information")
-	float original_avatar_eyeball_height = 172.666870f;
+		float original_avatar_eyeball_height = 172.666870f;
 
 	UPROPERTY(EditAnywhere, Category = "Information")
-	float original_camera_height;
+		float original_camera_height;
 
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
-	float floor_height;
+		float floor_height;
 
 	// original_camera_location.Z represents original camera_eye_height
 	UPROPERTY(VisibleAnywhere, Category = "Information")
-	FVector original_camera_location;
-	
+		FVector original_camera_location;
+
 	UPROPERTY(VisibleAnywhere, Category = "General Parameters")
-	TArray<float> offsets;
+		TArray<float> offsets;
 
 	UPROPERTY(VisibleAnywhere, Category = "Motion Parameters")
-	float thumbstick_y;
+		float thumbstick_y;
 
 	UPROPERTY(EditAnywhere, Category = "Motion Parameters")
-	float thumbstick_speed_scale;
+		float thumbstick_speed_scale;
 
 
 	AVRPawn();
@@ -111,10 +111,10 @@ public:
 	void scale_model(float offset);
 
 
-	
+
 
 private:
 	TArray<float> fill_offset_TArray(FString path);
-	
+
 
 };
