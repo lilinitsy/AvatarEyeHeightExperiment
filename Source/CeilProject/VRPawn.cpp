@@ -39,18 +39,6 @@ AVRPawn::AVRPawn()
 	camera_attachment_point->SetupAttachment(vr_origin);
 	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
 	camera->SetupAttachment(camera_attachment_point);
-	//camera->AttachTo(skeletal_mesh, "cc_base_r_eye");
-	//camera->AttachToComponent(skeletal_mesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, "cc_base_r_eye");
-	//camera->SetRelativeLocation(FVector(0.0f, 0.0f, -original_camera_height));
-
-
-	/*camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
-	camera_attachment_point->AttachTo(skeletal_mesh, "cc_base_r_eye");
-	camera = CreateDefaultSubobject<UCameraComponent>(TEXT("camera"));
-	camera->SetupAttachment(camera_attachment_point);
-	*/
-
-	//camera->SetRelativeRotation()
 
 	// controller setup
 	// https://docs.unrealengine.com/en-US/Platforms/VR/DevelopVR/MotionController/index.html
@@ -119,6 +107,27 @@ void AVRPawn::Tick(float DeltaTime)
 
 	UE_LOG(LogTemp, Log, TEXT("Current camera height: %f\n"), camera->GetComponentLocation().Z - floor_height);
 	//camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, -original_camera_height));
+
+
+	if (tick_counter > 1000)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Average original camera height: %f\n"), original_camera_height);
+	}
+
+	else if (tick_counter < 1000)
+	{
+		sum_height += camera->GetComponentLocation().Z - floor_height;
+	}
+
+	else
+	{
+		original_camera_height = sum_height / 1000.0f;
+	}
+
+
+	UE_LOG(LogTemp, Log, TEXT("Tick counter: %d\n"), tick_counter);
+
+	tick_counter++;
 }
 
 // Called to bind functionality to input
@@ -142,7 +151,7 @@ void AVRPawn::reset_hmd_origin()
 }
 
 
-void AVRPawn::scale_model(float offset)
+void AVRPawn::scale_model_offset(float offset)
 {
 	// Calculate new model scale - Possibly buggy?
 	/*float new_model_z_dimension = original_avatar_height + offset;
@@ -155,6 +164,19 @@ void AVRPawn::scale_model(float offset)
 	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale, scale));
 }
 
+void AVRPawn::scale_model_adjustment(float amount)
+{
+	// Calculate new model scale - Possibly buggy?
+	/*float new_model_z_dimension = original_avatar_height + offset;
+	float new_model_z_scale = new_model_z_dimension / original_avatar_height;
+	//skeletal_mesh->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
+	skeletal_attachment_point->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
+	*/
+
+	float scale = (original_camera_height + camera_attachment_point->GetRelativeTransform().GetLocation().Z + amount) / original_avatar_eyeball_height;
+	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale, scale));
+}
+
 
 void AVRPawn::cycle_offset()
 {
@@ -164,7 +186,7 @@ void AVRPawn::cycle_offset()
 	offsets.RemoveAt(offset_index);
 
 
-	scale_model(offset);
+	scale_model_offset(offset);
 
 	// Move camera
 	FVector camera_location = camera_attachment_point->GetComponentLocation();
@@ -210,9 +232,10 @@ void AVRPawn::set_thumbstick_y(float y)
 	if (FGenericPlatformMath::Abs(y) > 0.1f)
 	{
 		float dt = GetWorld()->GetDeltaSeconds();
-		float camera_movement = 5.0f * thumbstick_speed_scale * y * dt; // 10 is to scale y 
+		float camera_movement = thumbstick_speed_scale * y * dt;
 		FVector camera_location = camera_attachment_point->GetComponentLocation();
 		camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, camera_location.Z + camera_movement));
+		scale_model_adjustment(camera_movement);
 
 		UE_LOG(LogTemp, Log, TEXT("set_thumbstick_y: Camera Z Position: %f\n"), camera_attachment_point->GetComponentLocation().Z);
 		UE_LOG(LogTemp, Log, TEXT("set_thumbstick_y: Camera Movement: %f\n"), camera_movement);

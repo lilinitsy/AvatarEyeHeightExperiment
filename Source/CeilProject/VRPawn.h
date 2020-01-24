@@ -96,7 +96,7 @@ public:
 		float thumbstick_y;
 
 	UPROPERTY(EditAnywhere, Category = "Motion Parameters")
-		float thumbstick_speed_scale;
+		float thumbstick_speed_scale;		
 
 
 	AVRPawn();
@@ -108,13 +108,15 @@ public:
 	void cycle_offset();
 	void record_guess();
 	void write_data_to_file();
-	void scale_model(float offset);
+	void scale_model_offset(float offset);
+	void scale_model_adjustment(float amount);
 
 
 
 
 private:
 	TArray<float> fill_offset_TArray(FString path);
-
+	int tick_counter = 0;
+	float sum_height = 0.0f;
 
 };
