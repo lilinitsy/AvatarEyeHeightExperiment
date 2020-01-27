@@ -107,7 +107,7 @@ public:
 	void set_thumbstick_y(float y);
 	void cycle_offset();
 	void record_guess();
-	void write_data_to_file();
+	void write_data_to_file(FString data);
 	void scale_model_offset(float offset);
 	void scale_model_adjustment(float amount);
 

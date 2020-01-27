@@ -105,27 +105,18 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	UE_LOG(LogTemp, Log, TEXT("Current camera height: %f\n"), camera->GetComponentLocation().Z - floor_height);
-	//camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, -original_camera_height));
-
-
-	if (tick_counter > 1000)
+	if (tick_counter == 1000)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Average original camera height: %f\n"), original_camera_height);
+		UE_LOG(LogTemp, Log, TEXT("Originally set camera height: %f\n"), original_camera_height);
+		original_camera_height = sum_height / 1000.0f;
+		UE_LOG(LogTemp, Log, TEXT("New Average Camera Height: %f\n"), original_camera_height);
 	}
 
 	else if (tick_counter < 1000)
 	{
+		UE_LOG(LogTemp, Log, TEXT("CALIBRATING EYE HEIGHT: TICK %d OUT OF 1000\n"), tick_counter);
 		sum_height += camera->GetComponentLocation().Z - floor_height;
 	}
-
-	else
-	{
-		original_camera_height = sum_height / 1000.0f;
-	}
-
-
-	UE_LOG(LogTemp, Log, TEXT("Tick counter: %d\n"), tick_counter);
 
 	tick_counter++;
 }
@@ -153,26 +144,12 @@ void AVRPawn::reset_hmd_origin()
 
 void AVRPawn::scale_model_offset(float offset)
 {
-	// Calculate new model scale - Possibly buggy?
-	/*float new_model_z_dimension = original_avatar_height + offset;
-	float new_model_z_scale = new_model_z_dimension / original_avatar_height;
-	//skeletal_mesh->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
-	skeletal_attachment_point->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
-	*/
-
 	float scale = (original_camera_height + offset) / original_avatar_eyeball_height;
 	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale, scale));
 }
 
 void AVRPawn::scale_model_adjustment(float amount)
 {
-	// Calculate new model scale - Possibly buggy?
-	/*float new_model_z_dimension = original_avatar_height + offset;
-	float new_model_z_scale = new_model_z_dimension / original_avatar_height;
-	//skeletal_mesh->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
-	skeletal_attachment_point->SetRelativeScale3D(FVector(new_model_z_scale, new_model_z_scale, new_model_z_scale));
-	*/
-
 	float scale = (original_camera_height + camera_attachment_point->GetRelativeTransform().GetLocation().Z + amount) / original_avatar_eyeball_height;
 	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale, scale));
 }
@@ -190,14 +167,18 @@ void AVRPawn::cycle_offset()
 
 	// Move camera
 	FVector camera_location = camera_attachment_point->GetComponentLocation();
-	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Original Camera Z Position: %f\n"), original_camera_location.Z);c
-	//UE_LOG(LogTemp, Log, TEXT("cycle_offset: Old Camera Z Position: %f\n"), camera_location.Z);
-
 	camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
-
 	UE_LOG(LogTemp, Log, TEXT("cycle_offset: New Camera Z Position: %f\n"), camera_location.Z);
 	UE_LOG(LogTemp, Log, TEXT("cycle_offset: Offset: %f\n"), offset);
 
+	// Attempt to write offset to a file
+	FString offset_string = FString::SanitizeFloat(offset) + "\t";
+	write_data_to_file(offset_string);
+}
+
+
+void AVRPawn::write_data_to_file(FString data)
+{
 	FString save_directory = FPaths::ProjectDir();
 	FString save_file = FString("data.txt");
 	IPlatformFile& file = FPlatformFileManager::Get().GetPlatformFile();
@@ -205,17 +186,8 @@ void AVRPawn::cycle_offset()
 	if (file.CreateDirectory(*save_directory))
 	{
 		FString absolute_file_path = save_directory + "/" + save_file;
-		FString offset_string = FString::SanitizeFloat(offset);
-		FFileHelper::SaveStringToFile(offset_string, *save_file, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
-
-		UE_LOG(LogTemp, Log, TEXT("File directory stuff maybe working\n"));
+		FFileHelper::SaveStringToFile(data, *absolute_file_path, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
 	}
-}
-
-
-void write_data_to_file()
-{
-
 }
 
 
@@ -224,7 +196,8 @@ void AVRPawn::record_guess()
 	// Do we measure it based on offset or based on true location?
 	// How do we define true location while scaling?
 	float guess_height = camera->GetRelativeTransform().GetLocation().Z;
-	UE_LOG(LogTemp, Log, TEXT("Testing guess height stuff: %f\n"), guess_height);
+	FString guess_height_string = FString::SanitizeFloat(guess_height) + "\n";
+	write_data_to_file(guess_height_string);
 }
 
 void AVRPawn::set_thumbstick_y(float y)
