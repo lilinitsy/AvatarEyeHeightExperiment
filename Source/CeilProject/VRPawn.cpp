@@ -161,6 +161,7 @@ void AVRPawn::scale_model_adjustment(float amount)
 
 // RNG for -80 to 80?
 // list of 10 rooms, 11 offsets, 1 room, 1 offset, then redo
+// keep track of trial n
 void AVRPawn::cycle_offset()
 {
 	// Get offset and remove it from list
