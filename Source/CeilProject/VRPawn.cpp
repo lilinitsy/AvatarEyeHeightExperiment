@@ -105,6 +105,11 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+
+	USkeletalMeshSocket *foot_l = (USkeletalMeshSocket*) skeletal_mesh->GetSocketByName("foot_l");
+	//foot_l->
+
+
 	if (tick_counter == 1000)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Originally set camera height: %f\n"), original_camera_height);
@@ -154,7 +159,8 @@ void AVRPawn::scale_model_adjustment(float amount)
 	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale, scale));
 }
 
-
+// RNG for -80 to 80?
+// list of 10 rooms, 11 offsets, 1 room, 1 offset, then redo
 void AVRPawn::cycle_offset()
 {
 	// Get offset and remove it from list
