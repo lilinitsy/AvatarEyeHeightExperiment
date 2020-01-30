@@ -56,7 +56,7 @@ AVRPawn::AVRPawn()
 	left_hand->SetupAttachment(camera);
 
 
-
+	// Look into redoing the following if's
 	if (male_model)
 	{
 		static ConstructorHelpers::FObjectFinder<USkeletalMesh> skeletal_mesh_asset(TEXT("SkeletalMesh'/Game/Blueprints/avatar_male/male_withhead/avatar_male.avatar_male'"));

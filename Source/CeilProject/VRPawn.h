@@ -96,8 +96,7 @@ public:
 		float thumbstick_y;
 
 	UPROPERTY(EditAnywhere, Category = "Motion Parameters")
-		float thumbstick_speed_scale;		
-
+		float thumbstick_speed_scale;
 
 	AVRPawn();
 	virtual void Tick(float DeltaTime) override;
@@ -110,8 +109,6 @@ public:
 	void write_data_to_file(FString data);
 	void scale_model_offset(float offset);
 	void scale_model_adjustment(float amount);
-
-
 
 
 private:
