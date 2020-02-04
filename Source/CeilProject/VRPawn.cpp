@@ -164,6 +164,12 @@ void AVRPawn::scale_model_adjustment(float amount)
 // keep track of trial n
 void AVRPawn::cycle_offset()
 {
+
+	vr_origin->SetWorldLocation(FVector(-3.0, 2863.0f, 150.0f));
+
+
+
+	/*
 	// Get offset and remove it from list
 	int offset_index = FMath::RandRange(0, offsets.Num());
 	float offset = offsets[offset_index];
@@ -180,7 +186,7 @@ void AVRPawn::cycle_offset()
 
 	// Attempt to write offset to a file
 	FString offset_string = FString::SanitizeFloat(offset) + "\t";
-	write_data_to_file(offset_string);
+	write_data_to_file(offset_string);*/
 }
 
 
