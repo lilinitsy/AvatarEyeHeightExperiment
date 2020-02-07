@@ -110,6 +110,7 @@ public:
 	void scale_model_offset(float offset);
 	void scale_model_adjustment(float amount);
 
+	bool TMP_st_loaded = false;
 
 private:
 	TArray<float> fill_offset_TArray(FString path);

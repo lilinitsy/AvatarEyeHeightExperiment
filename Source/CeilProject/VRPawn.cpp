@@ -13,7 +13,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "XRMotionControllerBase.h"
 #include "GenericPlatform/GenericPlatformMath.h"
-
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AVRPawn::AVRPawn()
@@ -97,6 +97,14 @@ AVRPawn::AVRPawn()
 void AVRPawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	FLatentActionInfo latent_info;
+	latent_info.CallbackTarget = this;
+	//latent_info.ExecutionFunction = ""
+	latent_info.UUID = 1;
+	latent_info.Linkage = 0;
+	UGameplayStatics::LoadStreamLevel(this, "BlueprintOffice", true, true, latent_info);
+
 	original_camera_location = camera_attachment_point->GetComponentLocation();
 }
 
@@ -165,7 +173,32 @@ void AVRPawn::scale_model_adjustment(float amount)
 void AVRPawn::cycle_offset()
 {
 
-	vr_origin->SetWorldLocation(FVector(-3.0, 2863.0f, 150.0f));
+	//vr_origin->SetWorldLocation(FVector(-3.0, 2863.0f, 150.0f));
+	FLatentActionInfo latent_info;
+	latent_info.CallbackTarget = this;
+	//latent_info.ExecutionFunction = ""
+	latent_info.UUID = 1;
+	latent_info.Linkage = 0;
+	//UGameplayStatics::LoadStreamLevel(this, "SunTemple", true, true, latent_info);
+	//UGameplayStatics::UnloadStreamLevel(this, "BlueprintOffice", latent_info);
+
+
+	if (TMP_st_loaded)
+	{
+		UGameplayStatics::LoadStreamLevel(this, "SunTemple", true, true, latent_info);
+		TMP_st_loaded = false;
+		UE_LOG(LogTemp, Log, TEXT("TMP_ST_LOADED TRUE\n"));
+
+	}
+
+	else
+	{
+		UGameplayStatics::UnloadStreamLevel(this, "SunTemple", latent_info);
+		TMP_st_loaded = true;
+		UE_LOG(LogTemp, Log, TEXT("TMP_ST_LOADED FALSE\n"));
+
+	}
+
 
 
 
