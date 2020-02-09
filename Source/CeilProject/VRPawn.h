@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "MapData.h"
+
+
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "CoreMinimal.h"
@@ -9,6 +12,7 @@
 #include "GameFramework/Pawn.h"
 #include "MotionControllerComponent.h"
 #include "VRPawn.generated.h"
+
 
 UCLASS()
 class CEILPROJECT_API AVRPawn : public APawn
@@ -113,8 +117,12 @@ public:
 	bool TMP_st_loaded = false;
 
 private:
-	TArray<float> fill_offset_TArray(FString path);
+	TArray<MapData> maps;
+	MapData current_map;
+	MapData previous_map;
 	int tick_counter = 0;
 	float sum_height = 0.0f;
 
+	TArray<float> fill_offset_TArray(FString path);
+	void initialize_map_data();
 };

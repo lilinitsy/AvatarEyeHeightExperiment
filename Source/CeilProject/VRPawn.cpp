@@ -90,6 +90,7 @@ AVRPawn::AVRPawn()
 
 	// Fill the offsets array
 	offsets = fill_offset_TArray("eye-height-offsets.txt");
+	initialize_map_data();
 }
 
 
@@ -103,7 +104,6 @@ void AVRPawn::BeginPlay()
 	//latent_info.ExecutionFunction = ""
 	latent_info.UUID = 1;
 	latent_info.Linkage = 0;
-	UGameplayStatics::LoadStreamLevel(this, "BlueprintOffice", true, true, latent_info);
 
 	original_camera_location = camera_attachment_point->GetComponentLocation();
 }
@@ -127,7 +127,7 @@ void AVRPawn::Tick(float DeltaTime)
 
 	else if (tick_counter < 1000)
 	{
-		UE_LOG(LogTemp, Log, TEXT("CALIBRATING EYE HEIGHT: TICK %d OUT OF 1000\n"), tick_counter);
+		//UE_LOG(LogTemp, Log, TEXT("CALIBRATING EYE HEIGHT: TICK %d OUT OF 1000\n"), tick_counter);
 		sum_height += camera->GetComponentLocation().Z - floor_height;
 	}
 
@@ -172,39 +172,37 @@ void AVRPawn::scale_model_adjustment(float amount)
 // keep track of trial n
 void AVRPawn::cycle_offset()
 {
-
-	//vr_origin->SetWorldLocation(FVector(-3.0, 2863.0f, 150.0f));
-	FLatentActionInfo latent_info;
-	latent_info.CallbackTarget = this;
-	//latent_info.ExecutionFunction = ""
-	latent_info.UUID = 1;
-	latent_info.Linkage = 0;
-	//UGameplayStatics::LoadStreamLevel(this, "SunTemple", true, true, latent_info);
-	//UGameplayStatics::UnloadStreamLevel(this, "BlueprintOffice", latent_info);
-
-
-	if (TMP_st_loaded)
+	int map_index = FMath::RandRange(0, maps.Num() - 1);
+	previous_map = current_map;
+	while (maps[map_index].name == previous_map.name)
 	{
-		UGameplayStatics::LoadStreamLevel(this, "SunTemple", true, true, latent_info);
-		TMP_st_loaded = false;
-		UE_LOG(LogTemp, Log, TEXT("TMP_ST_LOADED TRUE\n"));
-
+		map_index = FMath::RandRange(0, maps.Num() - 1);
 	}
+	current_map = maps[map_index];
 
-	else
+	for (int i = 0; i < maps.Num(); i++)
 	{
-		UGameplayStatics::UnloadStreamLevel(this, "SunTemple", latent_info);
-		TMP_st_loaded = true;
-		UE_LOG(LogTemp, Log, TEXT("TMP_ST_LOADED FALSE\n"));
+		FLatentActionInfo latent_action_info;
+		latent_action_info.CallbackTarget = this;
+		latent_action_info.UUID = i;
+		latent_action_info.Linkage = 0;
 
+		if (maps[i].name == current_map.name)
+		{
+			UGameplayStatics::LoadStreamLevel(this, maps[i].name, true, true, latent_action_info);
+		}
+
+		else
+		{
+			UGameplayStatics::UnloadStreamLevel(this, maps[i].name, latent_action_info);
+		}
 	}
-
-
-
+	
+	vr_origin->SetWorldLocation(current_map.spawn_points[0]);
 
 	/*
 	// Get offset and remove it from list
-	int offset_index = FMath::RandRange(0, offsets.Num());
+	int offset_index = FMath::RandRange(0, offsets.Num() - 1);
 	float offset = offsets[offset_index];
 	offsets.RemoveAt(offset_index);
 
@@ -301,4 +299,43 @@ TArray<float> AVRPawn::fill_offset_TArray(FString filename)
 	}
 
 	return offset_tarray;
+}
+
+void AVRPawn::initialize_map_data()
+{
+	MapData office;
+	office.name = "BlueprintOffice";
+	office.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	office.floor_height = 200.0f;
+	office.spawn_points.Add(FVector(2430.0f, -390.0f, 200.0f));
+
+	MapData realistic_room;
+	realistic_room.name = "Room";
+	realistic_room.rotation = FRotator(0.0f, 0.0f, 180.0f);
+	realistic_room.floor_height = -0.75f; // Actual floor height is reported as 0, but this floor is thinner and doesn't touch the foot without this offset
+	realistic_room.spawn_points.Add(FVector(-90.0f, 2930.0f, -0.75f));
+
+	MapData scifi_bunk;
+	scifi_bunk.name = "Scifi_Bunk";
+	scifi_bunk.rotation = FRotator(0.0f, 0.0f, 180.0f);
+	scifi_bunk.floor_height = -12821.8f;
+	scifi_bunk.spawn_points.Add(FVector(315.0f, -99.0f, -12821.8f));
+	
+	MapData scifi_hallway;
+	scifi_hallway.name = "SifiW";
+	scifi_hallway.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	scifi_hallway.floor_height = -3512.0f;
+	scifi_hallway.spawn_points.Add(FVector(580.0f, -1143.0f, -3512.0f));
+
+	MapData sun_temple;
+	sun_temple.name = "SunTemple";
+	sun_temple.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	sun_temple.floor_height = 29.5f;
+	sun_temple.spawn_points.Add(FVector(5.0f, 24040.0f, 29.5f));
+
+	maps.Add(office);
+	maps.Add(realistic_room);
+	maps.Add(scifi_bunk);
+	maps.Add(scifi_hallway);
+	maps.Add(sun_temple);
 }
