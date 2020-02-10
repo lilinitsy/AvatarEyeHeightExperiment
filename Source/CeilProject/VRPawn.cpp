@@ -26,8 +26,6 @@ AVRPawn::AVRPawn()
 	// skeletal meshes
 	skeletal_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("skeletal_attachment_point"));
 	skeletal_attachment_point->SetupAttachment(vr_origin);
-	FVector relative_skeletal_location = FVector(0.0f, 0.0f, z_offset);
-	//skeletal_attachment_point->SetRelativeLocation(relative_skeletal_location);
 
 	skeletal_mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("skeletal_mesh"));
 	skeletal_mesh->SetupAttachment(skeletal_attachment_point);
@@ -88,8 +86,6 @@ AVRPawn::AVRPawn()
 		skeletal_mesh->SetAnimation(standing_animation);
 	}
 
-	// Fill the offsets array
-	offsets = fill_offset_TArray("eye-height-offsets.txt");
 	initialize_map_data();
 }
 
@@ -99,12 +95,6 @@ void AVRPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FLatentActionInfo latent_info;
-	latent_info.CallbackTarget = this;
-	//latent_info.ExecutionFunction = ""
-	latent_info.UUID = 1;
-	latent_info.Linkage = 0;
-
 	original_camera_location = camera_attachment_point->GetRelativeTransform().GetLocation();
 }
 
@@ -113,30 +103,37 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
-	USkeletalMeshSocket *foot_l = (USkeletalMeshSocket*) skeletal_mesh->GetSocketByName("foot_l");
-	//foot_l->
-
-
 	if (tick_counter == 1000)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Originally set camera height: %f\n"), original_camera_height);
 		original_camera_height = sum_height / 1000.0f;
 		UE_LOG(LogTemp, Log, TEXT("New Average Camera Height: %f\n"), original_camera_height);
+		tick_counter++;
 	}
 
 	else if (tick_counter < 1000)
 	{
 		UE_LOG(LogTemp, Log, TEXT("CALIBRATING EYE HEIGHT: TICK %d OUT OF 1000\n"), tick_counter);
-		//sum_height += camera->GetComponentLocation().Z - floor_height;
 		sum_height += camera->GetRelativeTransform().GetLocation().Z;
+		tick_counter++;
 	}
 
-	skeletal_attachment_point->SetRelativeLocation(FVector(camera->GetRelativeTransform().GetLocation().X, camera->GetRelativeTransform().GetLocation().Y - camera_attachment_point->GetRelativeTransform().GetLocation().Y, skeletal_attachment_point->GetRelativeTransform().GetLocation().Z));
+	FVector camera_forward = camera->GetForwardVector();
+
+	skeletal_attachment_point->SetRelativeLocation(FVector(	camera->GetRelativeTransform().GetLocation().X, 
+															camera->GetRelativeTransform().GetLocation().Y, 
+															skeletal_attachment_point->GetRelativeTransform().GetLocation().Z));
 	skeletal_attachment_point->SetRelativeRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
+	/*skeletal_attachment_point->SetRelativeLocation(FVector(	camera->GetRelativeTransform().GetLocation().X, 
+															camera->GetRelativeTransform().GetLocation().Y - 30.0f * skeletal_attachment_point->GetRelativeTransform().GetRotation().Z,
+															skeletal_attachment_point->GetRelativeTransform().GetLocation().Z));*/
+	skeletal_attachment_point->SetWorldLocation(FVector(camera->GetComponentLocation().X - 30.0f * camera_forward.X,
+														camera->GetComponentLocation().Y - 30.0f * camera_forward.Y,
+														skeletal_attachment_point->GetComponentLocation().Z));
 
 
-	tick_counter++;
+	UE_LOG(LogTemp, Log, TEXT("Camera relative location: %f %f %f\n"), camera->GetRelativeTransform().GetLocation().X, camera->GetRelativeTransform().GetLocation().Y, camera->GetRelativeTransform().GetLocation().Z);
+	UE_LOG(LogTemp, Log, TEXT("Skeletal Attachment Relative Location: %f %f %f\n"), skeletal_attachment_point->GetRelativeTransform().GetLocation().X, skeletal_attachment_point->GetRelativeTransform().GetLocation().Y, skeletal_attachment_point->GetRelativeTransform().GetLocation().Z);
 }
 
 // Called to bind functionality to input
@@ -172,9 +169,7 @@ void AVRPawn::scale_model_adjustment(float amount)
 	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale, scale));
 }
 
-// RNG for -80 to 80?
-// list of 10 rooms, 11 offsets, 1 room, 1 offset, then redo
-// keep track of trial n
+
 void AVRPawn::cycle_offset()
 {
 	int map_index = FMath::RandRange(0, maps.Num() - 1);
@@ -209,28 +204,11 @@ void AVRPawn::cycle_offset()
 
 	// Move camera
 	FVector camera_location = camera_attachment_point->GetRelativeTransform().GetLocation();
-	//camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
 	camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, original_camera_location.Z + offset));
+	
+	// Write offset to table
 	FString offset_string = FString::SanitizeFloat(offset) + "\t";
 	write_data_to_file(offset_string);
-	/*
-	// Get offset and remove it from list
-	int offset_index = FMath::RandRange(0, offsets.Num() - 1);
-	float offset = offsets[offset_index];
-	offsets.RemoveAt(offset_index);
-
-
-	scale_model_offset(offset);
-
-	// Move camera
-	FVector camera_location = camera_attachment_point->GetComponentLocation();
-	camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
-	UE_LOG(LogTemp, Log, TEXT("cycle_offset: New Camera Z Position: %f\n"), camera_location.Z);
-	UE_LOG(LogTemp, Log, TEXT("cycle_offset: Offset: %f\n"), offset);
-
-	// Attempt to write offset to a file
-	FString offset_string = FString::SanitizeFloat(offset) + "\t";
-	write_data_to_file(offset_string);*/
 }
 
 
@@ -264,9 +242,6 @@ void AVRPawn::set_thumbstick_y(float y)
 		FVector camera_location = camera_attachment_point->GetComponentLocation();
 		camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, camera_location.Z + camera_movement));
 		scale_model_adjustment(camera_movement);
-
-		UE_LOG(LogTemp, Log, TEXT("set_thumbstick_y: Camera Z Position: %f\n"), camera_attachment_point->GetComponentLocation().Z);
-		UE_LOG(LogTemp, Log, TEXT("set_thumbstick_y: Camera Movement: %f\n"), camera_movement);
 	}
 }
 
@@ -285,31 +260,6 @@ void AVRPawn::toggle_seating()
 		skeletal_mesh->SetActive(false);
 		sitting_mesh->SetActive(true);
 	}
-}
-
-
-TArray<float> AVRPawn::fill_offset_TArray(FString filename)
-{
-	TArray<float> offset_tarray;
-
-	// Load file
-	FString directory = FPaths::ProjectDir();
-	TArray<FString> string_offsets;
-	IPlatformFile& file = FPlatformFileManager::Get().GetPlatformFile();
-	if (file.CreateDirectory(*directory))
-	{
-		FString myFile = directory + filename;
-		FFileHelper::LoadFileToStringArray(string_offsets, *myFile);
-	}
-
-	// Convert each number to a float
-	for (int i = 0; i < string_offsets.Num(); i++)
-	{
-		const char *char_offset = TCHAR_TO_ANSI(*string_offsets[i]);
-		offset_tarray.Add(atof(char_offset));
-	}
-
-	return offset_tarray;
 }
 
 void AVRPawn::initialize_map_data()

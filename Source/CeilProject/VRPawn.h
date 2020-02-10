@@ -69,32 +69,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
 		bool male_model = true;
 
-	// Distance up/down between camera and z to make the camera align with the head
-	UPROPERTY(EditAnywhere, Category = "Information")
-		float z_offset = -174.0f;
-
-	// Possibly will be irrelevant
-	UPROPERTY(EditAnywhere, Category = "General Parameters")
-		float foot_size;
-
-	UPROPERTY(VisibleAnywhere, Category = "Information")
-		float original_avatar_height = 183.0f;
-
 	UPROPERTY(VisibleAnywhere, Category = "Information")
 		float original_avatar_eyeball_height = 172.666870f;
 
 	UPROPERTY(EditAnywhere, Category = "Information")
 		float original_camera_height;
 
-	UPROPERTY(EditAnywhere, Category = "General Parameters")
-		float floor_height;
-
 	// original_camera_location.Z represents original camera_eye_height
 	UPROPERTY(VisibleAnywhere, Category = "Information")
 		FVector original_camera_location;
-
-	UPROPERTY(VisibleAnywhere, Category = "General Parameters")
-		TArray<float> offsets;
 
 	UPROPERTY(VisibleAnywhere, Category = "Motion Parameters")
 		float thumbstick_y;
@@ -114,8 +97,6 @@ public:
 	void scale_model_offset(float offset);
 	void scale_model_adjustment(float amount);
 
-	bool TMP_st_loaded = false;
-
 private:
 	TArray<MapData> maps;
 	MapData current_map;
@@ -123,6 +104,5 @@ private:
 	int tick_counter = 0;
 	float sum_height = 0.0f;
 
-	TArray<float> fill_offset_TArray(FString path);
 	void initialize_map_data();
 };
