@@ -105,7 +105,7 @@ void AVRPawn::BeginPlay()
 	latent_info.UUID = 1;
 	latent_info.Linkage = 0;
 
-	original_camera_location = camera_attachment_point->GetComponentLocation();
+	original_camera_location = camera_attachment_point->GetRelativeTransform().GetLocation();
 }
 
 // Called every frame
@@ -127,8 +127,9 @@ void AVRPawn::Tick(float DeltaTime)
 
 	else if (tick_counter < 1000)
 	{
-		//UE_LOG(LogTemp, Log, TEXT("CALIBRATING EYE HEIGHT: TICK %d OUT OF 1000\n"), tick_counter);
-		sum_height += camera->GetComponentLocation().Z - floor_height;
+		UE_LOG(LogTemp, Log, TEXT("CALIBRATING EYE HEIGHT: TICK %d OUT OF 1000\n"), tick_counter);
+		//sum_height += camera->GetComponentLocation().Z - floor_height;
+		sum_height += camera->GetRelativeTransform().GetLocation().Z;
 	}
 
 	tick_counter++;
@@ -199,6 +200,13 @@ void AVRPawn::cycle_offset()
 	}
 	
 	vr_origin->SetWorldLocation(current_map.spawn_points[0]);
+	float offset = FMath::RandRange(-80.0f, 80.0f);
+	scale_model_offset(offset);
+
+	// Move camera
+	FVector camera_location = camera_attachment_point->GetRelativeTransform().GetLocation();
+	//camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
+	camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, original_camera_location.Z + offset));
 
 	/*
 	// Get offset and remove it from list
@@ -237,8 +245,6 @@ void AVRPawn::write_data_to_file(FString data)
 
 void AVRPawn::record_guess()
 {
-	// Do we measure it based on offset or based on true location?
-	// How do we define true location while scaling?
 	float guess_height = camera->GetRelativeTransform().GetLocation().Z;
 	FString guess_height_string = FString::SanitizeFloat(guess_height) + "\n";
 	write_data_to_file(guess_height_string);
