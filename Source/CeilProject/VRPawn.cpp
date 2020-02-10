@@ -132,6 +132,10 @@ void AVRPawn::Tick(float DeltaTime)
 		sum_height += camera->GetRelativeTransform().GetLocation().Z;
 	}
 
+	skeletal_attachment_point->SetRelativeLocation(FVector(camera->GetRelativeTransform().GetLocation().X, camera->GetRelativeTransform().GetLocation().Y - camera_attachment_point->GetRelativeTransform().GetLocation().Y, skeletal_attachment_point->GetRelativeTransform().GetLocation().Z));
+	skeletal_attachment_point->SetRelativeRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
+
+
 	tick_counter++;
 }
 
@@ -207,7 +211,8 @@ void AVRPawn::cycle_offset()
 	FVector camera_location = camera_attachment_point->GetRelativeTransform().GetLocation();
 	//camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, original_camera_location.Z + offset));
 	camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, original_camera_location.Z + offset));
-
+	FString offset_string = FString::SanitizeFloat(offset) + "\t";
+	write_data_to_file(offset_string);
 	/*
 	// Get offset and remove it from list
 	int offset_index = FMath::RandRange(0, offsets.Num() - 1);
