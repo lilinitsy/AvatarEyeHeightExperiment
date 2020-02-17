@@ -31,6 +31,7 @@ AVRPawn::AVRPawn()
 	skeletal_mesh->SetupAttachment(skeletal_attachment_point);
 	skeletal_mesh->bEditableWhenInherited = true;
 	skeletal_mesh->SetMobility(EComponentMobility::Movable);
+	skeletal_mesh->SetAnimation(standing_animation);
 
 	// camera setup
 	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
@@ -52,39 +53,6 @@ AVRPawn::AVRPawn()
 	left_hand->SetRelativeScale3D(FVector::OneVector);
 	left_hand->MotionSource = FXRMotionControllerBase::LeftHandSourceId;
 	left_hand->SetupAttachment(camera);
-
-
-	// Look into redoing the following if's
-	if (male_model)
-	{
-		static ConstructorHelpers::FObjectFinder<USkeletalMesh> skeletal_mesh_asset(TEXT("SkeletalMesh'/Game/Blueprints/avatar_male/male_withhead/avatar_male.avatar_male'"));
-		if (skeletal_mesh_asset.Object)
-		{
-			skeletal_mesh->SetSkeletalMesh(skeletal_mesh_asset.Object);
-
-
-		}
-	}
-
-	else
-	{
-		static ConstructorHelpers::FObjectFinder<USkeletalMesh> skeletal_mesh_asset(TEXT("SkeletalMesh'/Game/Blueprints/avatar_Eve/Eve_nohead/Eve_nohead.Eve_nohead'"));
-		if (skeletal_mesh_asset.Object)
-		{
-			skeletal_mesh->SetSkeletalMesh(skeletal_mesh_asset.Object);
-		}
-	}
-
-
-	if (seated)
-	{
-		skeletal_mesh->SetAnimation(sitting_animation);
-	}
-
-	else
-	{
-		skeletal_mesh->SetAnimation(standing_animation);
-	}
 
 	initialize_map_data();
 }
@@ -120,20 +88,24 @@ void AVRPawn::Tick(float DeltaTime)
 
 	FVector camera_forward = camera->GetForwardVector();
 
-	skeletal_attachment_point->SetRelativeLocation(FVector(	camera->GetRelativeTransform().GetLocation().X, 
+	FVector middle_eye_position = skeletal_mesh->GetSocketLocation("cc_base_m_eye");
+	FVector skeletal_position = skeletal_mesh->GetComponentLocation();
+	FVector skeletal_attachment_eye_difference = middle_eye_position - skeletal_position;
+
+	UE_LOG(LogTemp, Log, TEXT("skeletal_attachment_eye_difference: %f %f %f\n"), skeletal_attachment_eye_difference.X, skeletal_attachment_eye_difference.Y, skeletal_attachment_eye_difference.Z);
+	UE_LOG(LogTemp, Log, TEXT("middle eye position: %f %f %f\n"), middle_eye_position.X, middle_eye_position.Y, middle_eye_position.Z);
+
+	/*skeletal_attachment_point->SetRelativeLocation(FVector(	camera->GetRelativeTransform().GetLocation().X, 
 															camera->GetRelativeTransform().GetLocation().Y, 
 															skeletal_attachment_point->GetRelativeTransform().GetLocation().Z));
 	skeletal_attachment_point->SetRelativeRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
-	/*skeletal_attachment_point->SetRelativeLocation(FVector(	camera->GetRelativeTransform().GetLocation().X, 
+	skeletal_attachment_point->SetRelativeLocation(FVector(	camera->GetRelativeTransform().GetLocation().X, 
 															camera->GetRelativeTransform().GetLocation().Y - 30.0f * skeletal_attachment_point->GetRelativeTransform().GetRotation().Z,
-															skeletal_attachment_point->GetRelativeTransform().GetLocation().Z));*/
+															skeletal_attachment_point->GetRelativeTransform().GetLocation().Z));
 	skeletal_attachment_point->SetWorldLocation(FVector(camera->GetComponentLocation().X - 30.0f * camera_forward.X,
 														camera->GetComponentLocation().Y - 30.0f * camera_forward.Y,
-														skeletal_attachment_point->GetComponentLocation().Z));
-
-
-	UE_LOG(LogTemp, Log, TEXT("Camera relative location: %f %f %f\n"), camera->GetRelativeTransform().GetLocation().X, camera->GetRelativeTransform().GetLocation().Y, camera->GetRelativeTransform().GetLocation().Z);
-	UE_LOG(LogTemp, Log, TEXT("Skeletal Attachment Relative Location: %f %f %f\n"), skeletal_attachment_point->GetRelativeTransform().GetLocation().X, skeletal_attachment_point->GetRelativeTransform().GetLocation().Y, skeletal_attachment_point->GetRelativeTransform().GetLocation().Z);
+														skeletal_attachment_point->GetComponentLocation().Z));	
+	*/
 }
 
 // Called to bind functionality to input
@@ -201,6 +173,7 @@ void AVRPawn::cycle_offset()
 	vr_origin->SetWorldLocation(current_map.spawn_points[0]);
 	float offset = FMath::RandRange(-80.0f, 80.0f);
 	scale_model_offset(offset);
+	
 
 	// Move camera
 	FVector camera_location = camera_attachment_point->GetRelativeTransform().GetLocation();
@@ -249,17 +222,6 @@ void AVRPawn::set_thumbstick_y(float y)
 void AVRPawn::toggle_seating()
 {
 	// TODO
-	if (!seated)
-	{
-		skeletal_mesh->SetActive(true);
-		sitting_mesh->SetActive(false);
-	}
-
-	else
-	{
-		skeletal_mesh->SetActive(false);
-		sitting_mesh->SetActive(true);
-	}
 }
 
 void AVRPawn::initialize_map_data()

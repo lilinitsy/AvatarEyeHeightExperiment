@@ -42,9 +42,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Meshes")
 		USkeletalMeshComponent *skeletal_mesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Meshes")
-		USkeletalMeshComponent *sitting_mesh;
-
 	// CONTROLLERS
 	UPROPERTY(VisibleAnywhere, Category = "Motion Controllers")
 		UMotionControllerComponent *left_hand;
