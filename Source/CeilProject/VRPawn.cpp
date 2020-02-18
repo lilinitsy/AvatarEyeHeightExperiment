@@ -88,6 +88,8 @@ void AVRPawn::Tick(float DeltaTime)
 		UE_LOG(LogTemp, Log, TEXT("Originally set camera height: %f\n"), original_camera_height);
 		original_camera_height = sum_height / 1000.0f;
 		UE_LOG(LogTemp, Log, TEXT("New Average Camera Height: %f\n"), original_camera_height);
+		FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_camera_height) + "\n";
+		write_data_to_file(data);
 		tick_counter++;
 	}
 
@@ -106,7 +108,6 @@ void AVRPawn::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	PlayerInputComponent->BindAction("CycleOffset", IE_Released, this, &AVRPawn::cycle_offset);
-	PlayerInputComponent->BindAction("RecordGuess", IE_Released, this, &AVRPawn::record_guess);
 	PlayerInputComponent->BindAxis("MotionControllerRYAxis", this, &AVRPawn::set_thumbstick_y);
 }
 
@@ -137,6 +138,13 @@ void AVRPawn::scale_model_adjustment(float amount)
 
 void AVRPawn::cycle_offset()
 {
+	float guess_height = camera->GetRelativeTransform().GetLocation().Z;
+	FString guess_height_string = FString::SanitizeFloat(guess_height) + "\t";
+	FString current_map_string = current_map.name.ToString() + "\t";
+	FString offset_string = FString::SanitizeFloat(current_offset) + "\t";
+	FString data_string = current_map_string + offset_string + guess_height_string + "\n";
+	write_data_to_file(data_string);
+
 	int map_index = FMath::RandRange(0, maps.Num() - 1);
 	previous_map = current_map;
 	while (maps[map_index].name == previous_map.name)
@@ -165,6 +173,7 @@ void AVRPawn::cycle_offset()
 	
 	vr_origin->SetWorldLocation(current_map.spawn_points[0]);
 	float offset = FMath::RandRange(-80.0f, 80.0f);
+	current_offset = offset;
 	scale_model_offset(offset);
 	
 
@@ -188,9 +197,6 @@ void AVRPawn::cycle_offset()
 		skeletal_attachment_point->GetComponentLocation().Z));
 
 
-	// Write offset to table
-	FString offset_string = FString::SanitizeFloat(offset) + "\t";
-	write_data_to_file(offset_string);
 }
 
 

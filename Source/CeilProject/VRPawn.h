@@ -106,6 +106,6 @@ private:
 	MapData previous_map;
 	int tick_counter = 0;
 	float sum_height = 0.0f;
-
+	float current_offset = 0.0f;
 	void initialize_map_data();
 };
