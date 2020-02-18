@@ -54,6 +54,18 @@ AVRPawn::AVRPawn()
 	left_hand->MotionSource = FXRMotionControllerBase::LeftHandSourceId;
 	left_hand->SetupAttachment(camera);
 
+	if (male_model)
+	{
+		original_avatar_standing_eyeball_height = 173.267804f;
+		// set avatar sitting eyeball height
+		original_foot_size = 34.0f;
+	}
+
+	else
+	{
+		// set same properties
+	}
+
 	initialize_map_data();
 }
 
@@ -112,14 +124,14 @@ void AVRPawn::reset_hmd_origin()
 
 void AVRPawn::scale_model_offset(float offset)
 {
-	float scale = (original_camera_height + offset) / original_avatar_eyeball_height;
-	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale, scale));
+	float scale = (original_camera_height + offset) / original_avatar_standing_eyeball_height;
+	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale * (foot_size / original_foot_size), scale));
 }
 
 void AVRPawn::scale_model_adjustment(float amount)
 {
-	float scale = (original_camera_height + camera_attachment_point->GetRelativeTransform().GetLocation().Z + amount) / original_avatar_eyeball_height;
-	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale, scale));
+	float scale = (original_camera_height + camera_attachment_point->GetRelativeTransform().GetLocation().Z + amount) / original_avatar_standing_eyeball_height;
+	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale * (foot_size / original_foot_size), scale));
 }
 
 

@@ -67,10 +67,16 @@ public:
 		bool male_model = true;
 
 	UPROPERTY(VisibleAnywhere, Category = "Information")
-		float original_avatar_eyeball_height = 172.666870f;
+		float original_avatar_standing_eyeball_height;
 
-	UPROPERTY(EditAnywhere, Category = "Information")
+	UPROPERTY(VisibleAnywhere, Category = "Information")
 		float original_camera_height;
+
+	UPROPERTY(EditAnywhere, Category = "General Parameters")
+		float foot_size;
+
+	UPROPERTY(VisibleAnywhere, Category = "Information")
+		float original_foot_size;
 
 	// original_camera_location.Z represents original camera_eye_height
 	UPROPERTY(VisibleAnywhere, Category = "Information")
