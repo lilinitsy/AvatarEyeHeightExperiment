@@ -62,7 +62,7 @@ AVRPawn::AVRPawn()
 
 	else
 	{
-		// set same properties
+		// set same properties for female model
 	}
 
 	if (seated)
@@ -77,7 +77,6 @@ AVRPawn::AVRPawn()
 		original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
 		original_camera_height = original_standing_camera_height;
 		skeletal_mesh->SetAnimation(standing_animation);
-
 	}
 
 	initialize_map_data();
@@ -97,13 +96,21 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (tick_counter == 1000)
+	if (tick_counter == 1000 && calibrating_standing)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Originally set camera height: %f\n"), original_standing_camera_height);
 		original_standing_camera_height = sum_height / 1000.0f;
 		original_camera_height = original_standing_camera_height;
 		UE_LOG(LogTemp, Log, TEXT("New Average Camera Height: %f\n"), original_standing_camera_height);
 		FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_standing_camera_height) + "\n";
+		write_data_to_file(data);
+		tick_counter++;
+	}
+
+	else if (tick_counter == 1000 && !calibrating_standing)
+	{
+		original_sitting_camera_height = sum_height / 1000.0f;
+		FString data = "Sitting Eye Height: " + FString::SanitizeFloat(original_sitting_camera_height) + "\n";
 		write_data_to_file(data);
 		tick_counter++;
 	}
@@ -123,6 +130,8 @@ void AVRPawn::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	PlayerInputComponent->BindAction("CycleOffset", IE_Released, this, &AVRPawn::cycle_offset);
+	PlayerInputComponent->BindAction("SwapCalibration", IE_Released, this, &AVRPawn::swap_calibration);
+	PlayerInputComponent->BindAction("ToggleSeating", IE_Released, this, &AVRPawn::toggle_seating);
 	PlayerInputComponent->BindAxis("MotionControllerRYAxis", this, &AVRPawn::set_thumbstick_y);
 }
 
@@ -229,11 +238,10 @@ void AVRPawn::write_data_to_file(FString data)
 }
 
 
-void AVRPawn::record_guess()
+void AVRPawn::swap_calibration()
 {
-	float guess_height = camera->GetRelativeTransform().GetLocation().Z;
-	FString guess_height_string = FString::SanitizeFloat(guess_height) + "\n";
-	write_data_to_file(guess_height_string);
+	calibrating_standing = !calibrating_standing;
+	tick_counter = 0;
 }
 
 void AVRPawn::set_thumbstick_y(float y)
@@ -252,6 +260,24 @@ void AVRPawn::set_thumbstick_y(float y)
 void AVRPawn::toggle_seating()
 {
 	// TODO
+
+	seated = !seated;
+
+	if (seated)
+	{
+		original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
+		original_camera_height = original_sitting_camera_height;
+		skeletal_mesh->SetAnimation(sitting_animation);
+	}
+
+	else
+	{
+		original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
+		original_camera_height = original_standing_camera_height;
+		skeletal_mesh->SetAnimation(standing_animation);
+	}
+
+
 }
 
 void AVRPawn::initialize_map_data()

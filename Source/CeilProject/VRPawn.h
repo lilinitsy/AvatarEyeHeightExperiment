@@ -113,11 +113,13 @@ private:
 	int tick_counter = 0;
 	float sum_height = 0.0f;
 	float current_offset = 0.0f;
-	
+	bool calibrating_standing = true;
+
 	// TODO: Use these in toggle_seating to pick whether to use original_avatar_standing_eyeball_height or original_avatar_sitting_eyeball_height and original_standing_camera_height or original_sitting_camera_height
 	float original_avatar_eyeball_height;
 	float original_camera_height;
 
 
 	void initialize_map_data();
+	void swap_calibration();
 };
