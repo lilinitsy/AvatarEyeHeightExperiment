@@ -38,21 +38,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Meshes")
 		USceneComponent *skeletal_attachment_point;
 
-	// Look into USkeletalMesh sockets for bone transforms -> problem doing it programmatically is have to abandon this animation methodology
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skeletal Meshes")
 		USkeletalMeshComponent *skeletal_mesh;
 
-	// CONTROLLERS
 	UPROPERTY(VisibleAnywhere, Category = "Motion Controllers")
 		UMotionControllerComponent *left_hand;
 
 	UPROPERTY(VisibleAnywhere, Category = "Motion Controllers")
 		UMotionControllerComponent *right_hand;
-
-
-	/////////////////
-	/// There is a chance that I won't want to have two SkeletalMeshComponents, but just one and two animsequences
-	/////////////////
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 		UAnimationAsset *standing_animation;
@@ -61,7 +54,7 @@ public:
 		UAnimationAsset *sitting_animation;
 
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
-		bool seated = false; // maybe don't edit directly, call toggle_seating() for clarity?
+		bool seated = false;
 
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
 		bool male_model = true;
@@ -78,6 +71,7 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Information")
 		float original_sitting_camera_height;
 
+	// User foot size (cm)
 	UPROPERTY(EditAnywhere, Category = "General Parameters")
 		float foot_size;
 
@@ -101,7 +95,6 @@ public:
 	void toggle_seating();
 	void set_thumbstick_y(float y);
 	void cycle_offset();
-	void record_guess();
 	void write_data_to_file(FString data);
 	void scale_model_offset(float offset);
 	void scale_model_adjustment(float amount);
@@ -114,11 +107,8 @@ private:
 	float sum_height = 0.0f;
 	float current_offset = 0.0f;
 	bool calibrating_standing = true;
-
-	// TODO: Use these in toggle_seating to pick whether to use original_avatar_standing_eyeball_height or original_avatar_sitting_eyeball_height and original_standing_camera_height or original_sitting_camera_height
 	float original_avatar_eyeball_height;
 	float original_camera_height;
-
 
 	void initialize_map_data();
 	void swap_calibration();

@@ -70,6 +70,7 @@ AVRPawn::AVRPawn()
 		original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
 		original_camera_height = original_sitting_camera_height;
 		skeletal_mesh->SetAnimation(sitting_animation);
+		skeletal_mesh->PlayAnimation(sitting_animation, true);
 	}
 
 	else
@@ -77,6 +78,7 @@ AVRPawn::AVRPawn()
 		original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
 		original_camera_height = original_standing_camera_height;
 		skeletal_mesh->SetAnimation(standing_animation);
+		skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
 
 	initialize_map_data();
@@ -195,31 +197,44 @@ void AVRPawn::cycle_offset()
 		}
 	}
 	
-	vr_origin->SetWorldLocation(current_map.spawn_points[0]);
+
+	FVector origin_camera_difference = vr_origin->GetComponentLocation() - camera->GetComponentLocation();
+	vr_origin->SetWorldLocation(FVector(
+		current_map.spawn_points[0].X + origin_camera_difference.X, 
+		current_map.spawn_points[0].Y + origin_camera_difference.Y, 
+		current_map.spawn_points[0].Z));
+
 	float offset = FMath::RandRange(-80.0f, 80.0f);
 	current_offset = offset;
 	scale_model_offset(offset);
 	
-
-	// Move camera
-	FVector camera_location = camera_attachment_point->GetRelativeTransform().GetLocation();
+	// Move camera height offset
 	camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, original_camera_location.Z + offset));
 	
-
+	// move camera
 	FVector camera_forward = camera->GetForwardVector();
-
 	FVector middle_eye_position = skeletal_mesh->GetSocketLocation("cc_base_m_eye");
 	FVector skeletal_position = skeletal_mesh->GetComponentLocation();
 	FVector skeletal_attachment_eye_difference = middle_eye_position - skeletal_position;
 
-	UE_LOG(LogTemp, Log, TEXT("skeletal_attachment_eye_difference: %f %f %f\n"), skeletal_attachment_eye_difference.X, skeletal_attachment_eye_difference.Y, skeletal_attachment_eye_difference.Z);
-	UE_LOG(LogTemp, Log, TEXT("middle eye position: %f %f %f\n"), middle_eye_position.X, middle_eye_position.Y, middle_eye_position.Z);
-
-	skeletal_attachment_point->SetWorldLocation(FVector(
+	/*skeletal_attachment_point->SetWorldLocation(FVector(
 		skeletal_attachment_point->GetComponentLocation().X,
 		camera->GetComponentLocation().Y + skeletal_attachment_eye_difference.Y * camera_forward.Y,
 		skeletal_attachment_point->GetComponentLocation().Z));
+	*/
 
+	skeletal_attachment_point->SetRelativeRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
+	/*skeletal_attachment_point->SetRelativeLocation(FVector(
+		camera->GetRelativeTransform().GetLocation().X,
+		camera->GetRelativeTransform().GetLocation().Y - skeletal_attachment_eye_difference.Y * camera_forward.Y,
+		0.0f));
+	*/
+
+	skeletal_attachment_point->SetRelativeLocation(FVector(
+		camera->GetRelativeTransform().GetLocation().X,
+		camera->GetRelativeTransform().GetLocation().Y - skeletal_attachment_eye_difference.Y * camera_forward.Y,
+		0.0f));
+	UE_LOG(LogTemp, Log, TEXT("camera (x, y): (%f, %f)\n"), camera->GetRelativeTransform().GetLocation().X, camera->GetRelativeTransform().GetLocation().Y);
 
 }
 
@@ -259,8 +274,6 @@ void AVRPawn::set_thumbstick_y(float y)
 
 void AVRPawn::toggle_seating()
 {
-	// TODO
-
 	seated = !seated;
 
 	if (seated)
@@ -268,6 +281,7 @@ void AVRPawn::toggle_seating()
 		original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
 		original_camera_height = original_sitting_camera_height;
 		skeletal_mesh->SetAnimation(sitting_animation);
+		skeletal_mesh->PlayAnimation(sitting_animation, true);
 	}
 
 	else
@@ -275,10 +289,12 @@ void AVRPawn::toggle_seating()
 		original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
 		original_camera_height = original_standing_camera_height;
 		skeletal_mesh->SetAnimation(standing_animation);
+		skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
 
 
 }
+
 
 void AVRPawn::initialize_map_data()
 {
