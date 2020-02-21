@@ -164,77 +164,67 @@ void AVRPawn::scale_model_adjustment(float amount)
 
 void AVRPawn::cycle_offset()
 {
-	float guess_height = camera->GetRelativeTransform().GetLocation().Z;
-	FString guess_height_string = FString::SanitizeFloat(guess_height) + "\t";
-	FString current_map_string = current_map.name.ToString() + "\t";
-	FString offset_string = FString::SanitizeFloat(current_offset) + "\t";
-	FString data_string = current_map_string + offset_string + guess_height_string + "\n";
-	write_data_to_file(data_string);
-
-	int map_index = FMath::RandRange(0, maps.Num() - 1);
-	previous_map = current_map;
-	while (maps[map_index].name == previous_map.name)
+	if (camera->GetForwardVector().Z > -0.1f && camera->GetForwardVector().Z < 0.2f)
 	{
-		map_index = FMath::RandRange(0, maps.Num() - 1);
-	}
-	current_map = maps[map_index];
+		float guess_height = camera->GetRelativeTransform().GetLocation().Z;
+		FString guess_height_string = FString::SanitizeFloat(guess_height) + "\t";
+		FString current_map_string = current_map.name.ToString() + "\t";
+		FString offset_string = FString::SanitizeFloat(current_offset) + "\t";
+		FString data_string = current_map_string + offset_string + guess_height_string + "\n";
+		write_data_to_file(data_string);
 
-	for (int i = 0; i < maps.Num(); i++)
-	{
-		FLatentActionInfo latent_action_info;
-		latent_action_info.CallbackTarget = this;
-		latent_action_info.UUID = i;
-		latent_action_info.Linkage = 0;
-
-		if (maps[i].name == current_map.name)
+		int map_index = FMath::RandRange(0, maps.Num() - 1);
+		previous_map = current_map;
+		while (maps[map_index].name == previous_map.name)
 		{
-			UGameplayStatics::LoadStreamLevel(this, maps[i].name, true, true, latent_action_info);
+			map_index = FMath::RandRange(0, maps.Num() - 1);
+		}
+		current_map = maps[map_index];
+
+		for (int i = 0; i < maps.Num(); i++)
+		{
+			FLatentActionInfo latent_action_info;
+			latent_action_info.CallbackTarget = this;
+			latent_action_info.UUID = i;
+			latent_action_info.Linkage = 0;
+
+			if (maps[i].name == current_map.name)
+			{
+				UGameplayStatics::LoadStreamLevel(this, maps[i].name, true, true, latent_action_info);
+			}
+
+			else
+			{
+				UGameplayStatics::UnloadStreamLevel(this, maps[i].name, latent_action_info);
+			}
 		}
 
-		else
-		{
-			UGameplayStatics::UnloadStreamLevel(this, maps[i].name, latent_action_info);
-		}
+
+		FVector origin_camera_difference = vr_origin->GetComponentLocation() - camera->GetComponentLocation();
+		vr_origin->SetWorldLocation(FVector(
+			current_map.spawn_points[0].X + origin_camera_difference.X,
+			current_map.spawn_points[0].Y + origin_camera_difference.Y,
+			current_map.spawn_points[0].Z));
+
+		float offset = FMath::RandRange(-80.0f, 80.0f);
+		current_offset = offset;
+		scale_model_offset(offset);
+
+		// Move camera height offset
+		camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, original_camera_location.Z + offset));
+
+		// move skeletal mesh to line eyeball up with camera
+		FVector camera_forward = camera->GetForwardVector();
+		FVector middle_eye_position = skeletal_mesh->GetSocketLocation("cc_base_m_eye");
+		FVector skeletal_position = skeletal_mesh->GetComponentLocation();
+		FVector skeletal_attachment_eye_difference = middle_eye_position - skeletal_position;
+		skeletal_attachment_point->SetRelativeRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
+		skeletal_attachment_point->SetWorldLocation(FVector(
+			current_map.spawn_points[0].X - skeletal_attachment_eye_difference.X * camera_forward.X,
+			current_map.spawn_points[0].Y - skeletal_attachment_eye_difference.Y * camera_forward.Y,
+			current_map.spawn_points[0].Z));
 	}
-	
-
-	FVector origin_camera_difference = vr_origin->GetComponentLocation() - camera->GetComponentLocation();
-	vr_origin->SetWorldLocation(FVector(
-		current_map.spawn_points[0].X + origin_camera_difference.X, 
-		current_map.spawn_points[0].Y + origin_camera_difference.Y, 
-		current_map.spawn_points[0].Z));
-
-	float offset = FMath::RandRange(-80.0f, 80.0f);
-	current_offset = offset;
-	scale_model_offset(offset);
-	
-	// Move camera height offset
-	camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, original_camera_location.Z + offset));
-	
-	// move camera
-	FVector camera_forward = camera->GetForwardVector();
-	FVector middle_eye_position = skeletal_mesh->GetSocketLocation("cc_base_m_eye");
-	FVector skeletal_position = skeletal_mesh->GetComponentLocation();
-	FVector skeletal_attachment_eye_difference = middle_eye_position - skeletal_position;
-
-	/*skeletal_attachment_point->SetWorldLocation(FVector(
-		skeletal_attachment_point->GetComponentLocation().X,
-		camera->GetComponentLocation().Y + skeletal_attachment_eye_difference.Y * camera_forward.Y,
-		skeletal_attachment_point->GetComponentLocation().Z));
-	*/
-
-	skeletal_attachment_point->SetRelativeRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
-	/*skeletal_attachment_point->SetRelativeLocation(FVector(
-		camera->GetRelativeTransform().GetLocation().X,
-		camera->GetRelativeTransform().GetLocation().Y - skeletal_attachment_eye_difference.Y * camera_forward.Y,
-		0.0f));
-	*/
-
-	skeletal_attachment_point->SetRelativeLocation(FVector(
-		camera->GetRelativeTransform().GetLocation().X,
-		camera->GetRelativeTransform().GetLocation().Y - skeletal_attachment_eye_difference.Y * camera_forward.Y,
-		0.0f));
-	UE_LOG(LogTemp, Log, TEXT("camera (x, y): (%f, %f)\n"), camera->GetRelativeTransform().GetLocation().X, camera->GetRelativeTransform().GetLocation().Y);
+	UE_LOG(LogTemp, Log, TEXT("camera Forward (x, y, z): (%f, %f, %f)\n"), camera->GetForwardVector().X, camera->GetForwardVector().Y, camera->GetForwardVector().Z);
 
 }
 
