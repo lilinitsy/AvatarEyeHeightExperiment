@@ -124,6 +124,26 @@ void AVRPawn::Tick(float DeltaTime)
 		tick_counter++;
 	}
 
+
+	if (seated)
+	{
+		original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
+		original_camera_height = original_sitting_camera_height;
+		skeletal_mesh->SetAnimation(sitting_animation);
+		skeletal_mesh->PlayAnimation(sitting_animation, true);
+	}
+
+	else
+	{
+		original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
+		original_camera_height = original_standing_camera_height;
+		skeletal_mesh->SetAnimation(standing_animation);
+		skeletal_mesh->PlayAnimation(standing_animation, true);
+	}
+
+
+
+
 	skeletal_attachment_point->SetRelativeRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
 }
 
