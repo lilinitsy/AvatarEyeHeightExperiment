@@ -184,7 +184,7 @@ void AVRPawn::scale_model_adjustment(float amount)
 
 void AVRPawn::cycle_offset()
 {
-	if (camera->GetForwardVector().Z > -0.1f && camera->GetForwardVector().Z < 0.2f)
+	if (camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
 	{
 
 		// Record the everything for this trial and write to file
