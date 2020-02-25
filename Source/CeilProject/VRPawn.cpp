@@ -56,7 +56,7 @@ AVRPawn::AVRPawn()
 	if (male_model)
 	{
 		original_avatar_standing_eyeball_height = 173.267804f;
-		// original_avatar_sitting_eyeball_height = ...;
+		 original_avatar_sitting_eyeball_height = 130.1741255;
 		original_foot_size = 34.0f;
 	}
 
@@ -100,10 +100,9 @@ void AVRPawn::Tick(float DeltaTime)
 
 	if (tick_counter == 1000 && calibrating_standing)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Originally set camera height: %f\n"), original_standing_camera_height);
 		original_standing_camera_height = sum_height / 1000.0f;
 		original_camera_height = original_standing_camera_height;
-		UE_LOG(LogTemp, Log, TEXT("New Average Camera Height: %f\n"), original_standing_camera_height);
+		UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
 		FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_standing_camera_height) + "\n";
 		write_data_to_file(data);
 		tick_counter++;
@@ -113,13 +112,23 @@ void AVRPawn::Tick(float DeltaTime)
 	{
 		original_sitting_camera_height = sum_height / 1000.0f;
 		FString data = "Sitting Eye Height: " + FString::SanitizeFloat(original_sitting_camera_height) + "\n";
+		UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
 		write_data_to_file(data);
 		tick_counter++;
 	}
 
 	else if (tick_counter < 1000)
 	{
-		UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 1000\n"), tick_counter);
+		if (calibrating_standing)
+		{
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 1000\n"), tick_counter);
+		}
+
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 1000\n"), tick_counter);
+		}
+
 		sum_height += camera->GetRelativeTransform().GetLocation().Z;
 		tick_counter++;
 	}
@@ -135,7 +144,7 @@ void AVRPawn::Tick(float DeltaTime)
 
 	else
 	{
-		original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
+		original_avatar_eyeball_height = original_avatar_standing_eyeball_height; // this is the problem
 		original_camera_height = original_standing_camera_height;
 		skeletal_mesh->SetAnimation(standing_animation);
 		skeletal_mesh->PlayAnimation(standing_animation, true);
@@ -178,6 +187,11 @@ void AVRPawn::scale_model_offset(float offset)
 void AVRPawn::scale_model_adjustment(float amount)
 {
 	float scale = (original_camera_height + camera_attachment_point->GetRelativeTransform().GetLocation().Z + amount) / original_avatar_eyeball_height;
+	UE_LOG(LogTemp, Log, TEXT("ORIGINAL CAMERA HEIGHT: %f\n"), original_camera_height);
+	UE_LOG(LogTemp, Log, TEXT("CameraAttachmentPointZ: %f\n"), camera_attachment_point->GetRelativeTransform().GetLocation().Z);
+	UE_LOG(LogTemp, Log, TEXT("Amount: %f\n"), amount);
+	UE_LOG(LogTemp, Log, TEXT("ORIGINAL_AVATAR_EYEBALL_HEIGHT: %f|N"), original_avatar_eyeball_height);
+
 	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale * (foot_size / original_foot_size), scale));
 }
 
@@ -274,6 +288,7 @@ void AVRPawn::write_data_to_file(FString data)
 void AVRPawn::swap_calibration()
 {
 	calibrating_standing = !calibrating_standing;
+	sum_height = 0.0f;
 	tick_counter = 0;
 }
 
