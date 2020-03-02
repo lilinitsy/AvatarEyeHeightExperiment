@@ -109,6 +109,8 @@ private:
 	bool calibrating_standing = true;
 	float original_avatar_eyeball_height;
 	float original_camera_height;
+	int guess_counter = 0;
+	float guesses[3];
 
 	void initialize_map_data();
 	void swap_calibration();

@@ -81,6 +81,11 @@ AVRPawn::AVRPawn()
 		skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
 
+	for (int i = 0; i < 3; i++)
+	{
+		guesses[i] = 9999.0f;
+	}
+
 	initialize_map_data();
 }
 
@@ -98,9 +103,9 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (tick_counter == 1000 && calibrating_standing)
+	if (tick_counter == 500 && calibrating_standing)
 	{
-		original_standing_camera_height = sum_height / 1000.0f;
+		original_standing_camera_height = sum_height / 500.0f;
 		original_camera_height = original_standing_camera_height;
 		UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
 		FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_standing_camera_height) + "\n";
@@ -108,25 +113,25 @@ void AVRPawn::Tick(float DeltaTime)
 		tick_counter++;
 	}
 
-	else if (tick_counter == 1000 && !calibrating_standing)
+	else if (tick_counter == 500 && !calibrating_standing)
 	{
-		original_sitting_camera_height = sum_height / 1000.0f;
+		original_sitting_camera_height = sum_height / 500.0f;
 		FString data = "Sitting Eye Height: " + FString::SanitizeFloat(original_sitting_camera_height) + "\n";
 		UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
 		write_data_to_file(data);
 		tick_counter++;
 	}
 
-	else if (tick_counter < 1000)
+	else if (tick_counter < 500)
 	{
 		if (calibrating_standing)
 		{
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 1000\n"), tick_counter);
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500\n"), tick_counter);
 		}
 
 		else
 		{
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 1000\n"), tick_counter);
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500\n"), tick_counter);
 		}
 
 		sum_height += camera->GetRelativeTransform().GetLocation().Z;
@@ -149,11 +154,6 @@ void AVRPawn::Tick(float DeltaTime)
 		skeletal_mesh->SetAnimation(standing_animation);
 		skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
-
-
-
-
-	skeletal_attachment_point->SetRelativeRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
 }
 
 // Called to bind functionality to input
@@ -200,72 +200,91 @@ void AVRPawn::cycle_offset()
 {
 	if (camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
 	{
-
-		// Record the everything for this trial and write to file
-		float guess_height = camera->GetRelativeTransform().GetLocation().Z;
-		FString guess_height_string = FString::SanitizeFloat(guess_height) + "\t";
-		FString current_map_string = current_map.name.ToString() + "\t";
-		FString offset_string = FString::SanitizeFloat(current_offset) + "\t";
-		FString data_string = current_map_string + offset_string + guess_height_string + "\n";
-		write_data_to_file(data_string);
-
-		// Fade camera to black
-		UGameplayStatics::GetPlayerController(GetWorld(), 0)->PlayerCameraManager->StartCameraFade(1.0f, 0.0f, 2.0f, FLinearColor(0.0f, 0.0f, 0.0f, 1.0f), false, false);
-
-		// Pick a new random map
-		int map_index = FMath::RandRange(0, maps.Num() - 1);
-		previous_map = current_map;
-		while (maps[map_index].name == previous_map.name)
+		guesses[guess_counter] = camera->GetRelativeTransform().GetLocation().Z;
+		guess_counter++;
+		if (guesses[2] != 9999.0f)
 		{
-			map_index = FMath::RandRange(0, maps.Num() - 1);
-		}
-		current_map = maps[map_index];
-		
-		// Set the vr_origin so the player will spawn at the right location no matter where they're standing
-		FVector origin_camera_difference = vr_origin->GetComponentLocation() - camera->GetComponentLocation();
-		vr_origin->SetWorldLocation(FVector(
-			current_map.spawn_points[0].X + origin_camera_difference.X,
-			current_map.spawn_points[0].Y + origin_camera_difference.Y,
-			current_map.spawn_points[0].Z));
-
-		// Get random offset
-		float offset = FMath::RandRange(-80.0f, 80.0f);
-		current_offset = offset;
-		scale_model_offset(offset);
-
-		// Move camera height by offset
-		camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, original_camera_location.Z + offset));
-
-		// move skeletal mesh to line eyeball up with camera
-		FVector camera_forward = camera->GetForwardVector();
-		FVector middle_eye_position = skeletal_mesh->GetSocketLocation("cc_base_m_eye");
-		FVector skeletal_position = skeletal_mesh->GetComponentLocation();
-		FVector skeletal_attachment_eye_difference = middle_eye_position - skeletal_position;
-		skeletal_attachment_point->SetRelativeRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
-		skeletal_attachment_point->SetWorldLocation(FVector(
-			current_map.spawn_points[0].X - skeletal_attachment_eye_difference.X * camera_forward.X,
-			current_map.spawn_points[0].Y - skeletal_attachment_eye_difference.Y * camera_forward.Y,
-			current_map.spawn_points[0].Z));
-
-		// Unload all levels except the current map
-		for (int i = 0; i < maps.Num(); i++)
-		{
-			FLatentActionInfo latent_action_info;
-			latent_action_info.CallbackTarget = this;
-			latent_action_info.UUID = i;
-			latent_action_info.Linkage = 0;
-
-			if (maps[i].name == current_map.name)
+			// Record the everything for this trial and write to file
+			FString guess_height_string;
+			float avg_guess_height = 0.0f;
+			for (int i = 0; i < 3; i++)
 			{
-				UGameplayStatics::LoadStreamLevel(this, maps[i].name, true, true, latent_action_info);
+				guess_height_string += FString::SanitizeFloat(guesses[i]) + "\t";
+				avg_guess_height += guesses[i];
+			}
+			avg_guess_height /= 3.0f;
+			guess_height_string += FString::SanitizeFloat(avg_guess_height) + "\t";
+			FString current_map_string = current_map.name.ToString() + "\t";
+			FString offset_string = FString::SanitizeFloat(current_offset) + "\t";
+			FString camera_height_string = FString::SanitizeFloat(original_camera_height) + "\t";
+			FString data_string = current_map_string + offset_string + guess_height_string + camera_height_string + "\n";
+			write_data_to_file(data_string);
+
+			// Fade camera to black
+			UGameplayStatics::GetPlayerController(GetWorld(), 0)->PlayerCameraManager->StartCameraFade(1.0f, 0.0f, 2.0f, FLinearColor(0.0f, 0.0f, 0.0f, 1.0f), false, false);
+
+			// Pick a new random map
+			int map_index = FMath::RandRange(0, maps.Num() - 1);
+			previous_map = current_map;
+			while (maps[map_index].name == previous_map.name)
+			{
+				map_index = FMath::RandRange(0, maps.Num() - 1);
+			}
+			current_map = maps[map_index];
+		
+			// Set the vr_origin so the player will spawn at the right location no matter where they're standing
+			FVector origin_camera_difference = vr_origin->GetComponentLocation() - camera->GetComponentLocation();
+			vr_origin->SetWorldLocation(FVector(
+				current_map.spawn_points[0].X + origin_camera_difference.X,
+				current_map.spawn_points[0].Y + origin_camera_difference.Y,
+				current_map.spawn_points[0].Z));
+
+			// Get random offset
+			float offset = FMath::RandRange(-80.0f, 80.0f);
+			current_offset = offset;
+			scale_model_offset(offset);
+
+			// Move camera height by offset
+			camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, original_camera_location.Z + offset));
+
+			// move skeletal mesh to line eyeball up with camera
+			FVector camera_forward = camera->GetForwardVector();
+			FVector middle_eye_position = skeletal_mesh->GetSocketLocation("cc_base_m_eye");
+			FVector skeletal_position = skeletal_mesh->GetComponentLocation();
+			FVector skeletal_attachment_eye_difference = middle_eye_position - skeletal_position;
+			skeletal_attachment_point->SetRelativeRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
+			skeletal_attachment_point->SetWorldLocation(FVector(
+				current_map.spawn_points[0].X - skeletal_attachment_eye_difference.X * camera_forward.X,
+				current_map.spawn_points[0].Y - skeletal_attachment_eye_difference.Y * camera_forward.Y,
+				current_map.spawn_points[0].Z));
+
+			// Unload all levels except the current map
+			for (int i = 0; i < maps.Num(); i++)
+			{
+				FLatentActionInfo latent_action_info;
+				latent_action_info.CallbackTarget = this;
+				latent_action_info.UUID = i;
+				latent_action_info.Linkage = 0;
+
+				if (maps[i].name == current_map.name)
+				{
+					UGameplayStatics::LoadStreamLevel(this, maps[i].name, true, true, latent_action_info);
+				}
+
+				else
+				{
+					UGameplayStatics::UnloadStreamLevel(this, maps[i].name, latent_action_info);
+				}
 			}
 
-			else
+			for (int i = 0; i < 3; i++)
 			{
-				UGameplayStatics::UnloadStreamLevel(this, maps[i].name, latent_action_info);
+				guess_counter = 0;
+				guesses[i] = 9999.0f;
 			}
 		}
 	}
+	
 	UE_LOG(LogTemp, Log, TEXT("camera Forward (x, y, z): (%f, %f, %f)\n"), camera->GetForwardVector().X, camera->GetForwardVector().Y, camera->GetForwardVector().Z);
 
 }
