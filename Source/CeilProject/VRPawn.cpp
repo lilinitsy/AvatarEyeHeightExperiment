@@ -5,15 +5,15 @@
 #include "Components/InputComponent.h"
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"
+#include "GenericPlatform/GenericPlatformMath.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformFilemanager.h"
 #include "HeadMountedDisplay.h"
 #include "IXRTrackingSystem.h"
+#include "Kismet/GameplayStatics.h"
 #include "Misc/FileHelper.h"
 #include "UObject/ConstructorHelpers.h"
 #include "XRMotionControllerBase.h"
-#include "GenericPlatform/GenericPlatformMath.h"
-#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AVRPawn::AVRPawn()
@@ -354,35 +354,63 @@ void AVRPawn::initialize_map_data()
 	office.name = "BlueprintOffice";
 	office.rotation = FRotator(0.0f, 0.0f, 0.0f);
 	office.floor_height = 200.0f;
-	office.spawn_points.Add(FVector(2430.0f, -390.0f, 200.0f));
+	office.spawn_points.Add(FVector(100.0f, -1199.595703f, 192.002228f));
 
 	MapData realistic_room;
 	realistic_room.name = "Room";
 	realistic_room.rotation = FRotator(0.0f, 0.0f, 180.0f);
 	realistic_room.floor_height = -0.75f; // Actual floor height is reported as 0, but this floor is thinner and doesn't touch the foot without this offset
-	realistic_room.spawn_points.Add(FVector(-90.0f, 2930.0f, -0.75f));
+	realistic_room.spawn_points.Add(FVector(-106.195107f, 3177.424316f, -0.75f));
 
 	MapData scifi_bunk;
 	scifi_bunk.name = "Scifi_Bunk";
 	scifi_bunk.rotation = FRotator(0.0f, 0.0f, 180.0f);
 	scifi_bunk.floor_height = -12821.8f;
-	scifi_bunk.spawn_points.Add(FVector(315.0f, -99.0f, -12821.8f));
+	scifi_bunk.spawn_points.Add(FVector(-61.999939f, -191.999573, -12821.8f));
 	
 	MapData scifi_hallway;
 	scifi_hallway.name = "SifiW";
 	scifi_hallway.rotation = FRotator(0.0f, 0.0f, 0.0f);
 	scifi_hallway.floor_height = -3512.0f;
-	scifi_hallway.spawn_points.Add(FVector(580.0f, -1143.0f, -3512.0f));
+	scifi_hallway.spawn_points.Add(FVector(405.0, -165.0f, -3512.0f));
 
 	MapData sun_temple;
 	sun_temple.name = "SunTemple";
 	sun_temple.rotation = FRotator(0.0f, 0.0f, 0.0f);
 	sun_temple.floor_height = 29.5f;
-	sun_temple.spawn_points.Add(FVector(5.0f, 24040.0f, 29.5f));
+	sun_temple.spawn_points.Add(FVector(25.398819f, 22351.001953f, 29.5f));
+
+	MapData lightroom_day;
+	lightroom_day.name = "Lightroom_day";
+	lightroom_day.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	lightroom_day.floor_height = 36.0f;
+	lightroom_day.spawn_points.Add(FVector(0.0f, 0.0f, 36.0f));
+
+	MapData lightroom_night;
+	lightroom_night.name = "Lightroom_night";
+	lightroom_night.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	lightroom_night.floor_height = 36.0f;
+	lightroom_night.spawn_points.Add(FVector(0.0f, 0.0f, 36.0f));
+
+	MapData berlin_flat;
+	berlin_flat.name = "xoio_berlinflat";
+	berlin_flat.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	berlin_flat.floor_height = 0.0f;
+	berlin_flat.spawn_points.Add(FVector(86.0f, -78.0f, 0.0f));
+
+	MapData zen_walkway_wood;
+	zen_walkway_wood.name = "Zen_vis";
+	zen_walkway_wood.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	zen_walkway_wood.floor_height = 12.75f;
+	zen_walkway_wood.spawn_points.Add(FVector(402.5f, 315.0f, 12.75f));
+
 
 	maps.Add(office);
 	maps.Add(realistic_room);
 	maps.Add(scifi_bunk);
 	maps.Add(scifi_hallway);
 	maps.Add(sun_temple);
+	maps.Add(lightroom_day);
+	maps.Add(lightroom_night);
+	maps.Add(berlin_flat);
 }
