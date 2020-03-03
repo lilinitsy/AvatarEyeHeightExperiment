@@ -98,6 +98,10 @@ void AVRPawn::BeginPlay()
 	original_camera_location = camera_attachment_point->GetRelativeTransform().GetLocation();
 }
 
+
+float minheight = 10000.0f;
+float maxheight = 0.0f;
+
 // Called every frame
 void AVRPawn::Tick(float DeltaTime)
 {
@@ -108,6 +112,8 @@ void AVRPawn::Tick(float DeltaTime)
 		original_standing_camera_height = sum_height / 500.0f;
 		original_camera_height = original_standing_camera_height;
 		UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
+		UE_LOG(LogTemp, Log, TEXT("MIN HEIGHT: %f\n"), minheight);
+		UE_LOG(LogTemp, Log, TEXT("MAX HEIGHT: %f\n"), maxheight);
 		FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_standing_camera_height) + "\n";
 		write_data_to_file(data);
 		tick_counter++;
@@ -124,6 +130,7 @@ void AVRPawn::Tick(float DeltaTime)
 
 	else if (tick_counter < 500)
 	{
+		/*
 		if (calibrating_standing)
 		{
 			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500\n"), tick_counter);
@@ -132,6 +139,18 @@ void AVRPawn::Tick(float DeltaTime)
 		else
 		{
 			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500\n"), tick_counter);
+		}
+		*/
+		if (camera->GetRelativeTransform().GetLocation().Z < minheight && tick_counter > 0)
+		{
+			minheight = camera->GetRelativeTransform().GetLocation().Z;
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, minheight);
+		}
+
+		if (camera->GetRelativeTransform().GetLocation().Z > maxheight && tick_counter > 0)
+		{
+			maxheight = camera->GetRelativeTransform().GetLocation().Z;
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, maxheight);
 		}
 
 		sum_height += camera->GetRelativeTransform().GetLocation().Z;
