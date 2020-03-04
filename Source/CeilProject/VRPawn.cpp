@@ -114,6 +114,8 @@ void AVRPawn::Tick(float DeltaTime)
 		UE_LOG(LogTemp, Log, TEXT("MIN STANDING HEIGHT: %f\n"), min_standing_height);
 		UE_LOG(LogTemp, Log, TEXT("MAX STANDING HEIGHT: %f\n"), max_standing_height);
 		FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_standing_camera_height) + "\n";
+		data += "Min Standing Eye Height: " + FString::SanitizeFloat(min_standing_height);
+		data += "Max Standing Eye Height: " + FString::SanitizeFloat(max_standing_height);
 		write_data_to_file(data);
 		tick_counter++;
 	}
@@ -121,10 +123,12 @@ void AVRPawn::Tick(float DeltaTime)
 	else if (tick_counter == 500 && !calibrating_standing)
 	{
 		original_sitting_camera_height = sum_height / 500.0f;
-		FString data = "Sitting Eye Height: " + FString::SanitizeFloat(original_sitting_camera_height) + "\n";
 		UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
 		UE_LOG(LogTemp, Log, TEXT("MIN SITTING HEIGHT: %f\n"), min_sitting_height);
 		UE_LOG(LogTemp, Log, TEXT("MAX SITTING HEIGHT: %f\n"), max_sitting_height);
+		FString data = "Sitting Eye Height: " + FString::SanitizeFloat(original_sitting_camera_height) + "\n";
+		data += "Min Sitting Eye Height: " + FString::SanitizeFloat(min_sitting_height) + "\n";
+		data += "Max Sitting Eye Height: " + FString::SanitizeFloat(max_sitting_height) + "\n";
 		write_data_to_file(data);
 		tick_counter++;
 	}
