@@ -110,6 +110,10 @@ class CEILPROJECT_API AVRPawn : public APawn
 		float original_avatar_eyeball_height;
 		float original_camera_height;
 		int guess_counter = 0;
+		float min_standing_height = 10000.0f;
+		float max_standing_height = 0.0f;
+		float min_sitting_height = 10000.0f;
+		float max_sitting_height = 0.0f;
 		float guesses[3];
 
 		void initialize_map_data();

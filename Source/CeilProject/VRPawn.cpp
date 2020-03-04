@@ -99,8 +99,7 @@ void AVRPawn::BeginPlay()
 }
 
 
-float minheight = 10000.0f;
-float maxheight = 0.0f;
+
 
 // Called every frame
 void AVRPawn::Tick(float DeltaTime)
@@ -112,8 +111,8 @@ void AVRPawn::Tick(float DeltaTime)
 		original_standing_camera_height = sum_height / 500.0f;
 		original_camera_height = original_standing_camera_height;
 		UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
-		UE_LOG(LogTemp, Log, TEXT("MIN HEIGHT: %f\n"), minheight);
-		UE_LOG(LogTemp, Log, TEXT("MAX HEIGHT: %f\n"), maxheight);
+		UE_LOG(LogTemp, Log, TEXT("MIN STANDING HEIGHT: %f\n"), min_standing_height);
+		UE_LOG(LogTemp, Log, TEXT("MAX STANDING HEIGHT: %f\n"), max_standing_height);
 		FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_standing_camera_height) + "\n";
 		write_data_to_file(data);
 		tick_counter++;
@@ -124,33 +123,36 @@ void AVRPawn::Tick(float DeltaTime)
 		original_sitting_camera_height = sum_height / 500.0f;
 		FString data = "Sitting Eye Height: " + FString::SanitizeFloat(original_sitting_camera_height) + "\n";
 		UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
+		UE_LOG(LogTemp, Log, TEXT("MIN SITTING HEIGHT: %f\n"), min_sitting_height);
+		UE_LOG(LogTemp, Log, TEXT("MAX SITTING HEIGHT: %f\n"), max_sitting_height);
 		write_data_to_file(data);
 		tick_counter++;
 	}
 
 	else if (tick_counter < 500)
 	{
-		/*
-		if (calibrating_standing)
+		if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_standing_height && tick_counter > 0)
 		{
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500\n"), tick_counter);
+			min_standing_height = camera->GetRelativeTransform().GetLocation().Z;
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_standing_height);
 		}
 
-		else
+		if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_standing_height && tick_counter > 0)
 		{
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500\n"), tick_counter);
-		}
-		*/
-		if (camera->GetRelativeTransform().GetLocation().Z < minheight && tick_counter > 0)
-		{
-			minheight = camera->GetRelativeTransform().GetLocation().Z;
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, minheight);
+			max_standing_height = camera->GetRelativeTransform().GetLocation().Z;
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_standing_height);
 		}
 
-		if (camera->GetRelativeTransform().GetLocation().Z > maxheight && tick_counter > 0)
+		if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_sitting_height && tick_counter > 0)
 		{
-			maxheight = camera->GetRelativeTransform().GetLocation().Z;
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, maxheight);
+			min_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_sitting_height);
+		}
+
+		if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_sitting_height && tick_counter > 0)
+		{
+			max_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_sitting_height);
 		}
 
 		sum_height += camera->GetRelativeTransform().GetLocation().Z;
@@ -168,7 +170,7 @@ void AVRPawn::Tick(float DeltaTime)
 
 	else
 	{
-		original_avatar_eyeball_height = original_avatar_standing_eyeball_height; // this is the problem
+		original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
 		original_camera_height = original_standing_camera_height;
 		skeletal_mesh->SetAnimation(standing_animation);
 		skeletal_mesh->PlayAnimation(standing_animation, true);
