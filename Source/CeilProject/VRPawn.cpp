@@ -93,6 +93,7 @@ AVRPawn::AVRPawn()
 	}
 
 	initialize_map_data();
+	maps = map_list;
 }
 
 
@@ -118,12 +119,12 @@ void AVRPawn::Tick(float DeltaTime)
 	{
 		original_standing_camera_height = sum_height / 500.0f;
 		original_camera_height = original_standing_camera_height;
-		UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
-		UE_LOG(LogTemp, Log, TEXT("MIN STANDING HEIGHT: %f\n"), min_standing_height);
-		UE_LOG(LogTemp, Log, TEXT("MAX STANDING HEIGHT: %f\n"), max_standing_height);
+		//UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
+		//UE_LOG(LogTemp, Log, TEXT("MIN STANDING HEIGHT: %f\n"), min_standing_height);
+		//UE_LOG(LogTemp, Log, TEXT("MAX STANDING HEIGHT: %f\n"), max_standing_height);
 		FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_standing_camera_height) + "\n";
-		data += "Min Standing Eye Height: " + FString::SanitizeFloat(min_standing_height);
-		data += "Max Standing Eye Height: " + FString::SanitizeFloat(max_standing_height);
+		data += "Min Standing Eye Height: " + FString::SanitizeFloat(min_standing_height) + "\n";
+		data += "Max Standing Eye Height: " + FString::SanitizeFloat(max_standing_height) + "\n";
 		write_data_to_file(data);
 		tick_counter++;
 	}
@@ -132,9 +133,9 @@ void AVRPawn::Tick(float DeltaTime)
 	else if (tick_counter == 500 && !calibrating_standing)
 	{
 		original_sitting_camera_height = sum_height / 500.0f;
-		UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
-		UE_LOG(LogTemp, Log, TEXT("MIN SITTING HEIGHT: %f\n"), min_sitting_height);
-		UE_LOG(LogTemp, Log, TEXT("MAX SITTING HEIGHT: %f\n"), max_sitting_height);
+		//UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
+		//UE_LOG(LogTemp, Log, TEXT("MIN SITTING HEIGHT: %f\n"), min_sitting_height);
+		//UE_LOG(LogTemp, Log, TEXT("MAX SITTING HEIGHT: %f\n"), max_sitting_height);
 		FString data = "Sitting Eye Height: " + FString::SanitizeFloat(original_sitting_camera_height) + "\n";
 		data += "Min Sitting Eye Height: " + FString::SanitizeFloat(min_sitting_height) + "\n";
 		data += "Max Sitting Eye Height: " + FString::SanitizeFloat(max_sitting_height) + "\n";
@@ -147,25 +148,25 @@ void AVRPawn::Tick(float DeltaTime)
 		if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_standing_height && tick_counter > 0)
 		{
 			min_standing_height = camera->GetRelativeTransform().GetLocation().Z;
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_standing_height);
+			//UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_standing_height);
 		}
 
 		if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_standing_height && tick_counter > 0)
 		{
 			max_standing_height = camera->GetRelativeTransform().GetLocation().Z;
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_standing_height);
+			//UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_standing_height);
 		}
 
 		if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_sitting_height && tick_counter > 0)
 		{
 			min_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_sitting_height);
+			//UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_sitting_height);
 		}
 
 		if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_sitting_height && tick_counter > 0)
 		{
 			max_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_sitting_height);
+			//UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_sitting_height);
 		}
 
 		sum_height += camera->GetRelativeTransform().GetLocation().Z;
@@ -227,6 +228,12 @@ void AVRPawn::scale_model_adjustment(float amount)
 
 void AVRPawn::cycle_offset()
 {
+
+	for (int i = 0; i < 3; i++)
+	{
+		UE_LOG(LogTemp, Log, TEXT("guess[%d]: %f\n"), i, guesses[i]);
+
+	}
 	if (camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
 	{
 		guesses[guess_counter] = camera->GetRelativeTransform().GetLocation().Z;
@@ -252,7 +259,14 @@ void AVRPawn::cycle_offset()
 			// Fade camera to black
 			UGameplayStatics::GetPlayerController(GetWorld(), 0)->PlayerCameraManager->StartCameraFade(1.0f, 0.0f, 2.0f, FLinearColor(0.0f, 0.0f, 0.0f, 1.0f), false, false);
 
+			// Make sure that maps has entries. Reset if not (have gone through one full rotation)
+			if (maps.Num() == 0)
+			{
+				maps = map_list;
+			}
+
 			// Pick a new random map
+			UE_LOG(LogTemp, Log, TEXT("maps size: %d\n"), maps.Num());
 			int map_index = FMath::RandRange(0, maps.Num() - 1);
 			previous_map = current_map;
 			while (maps[map_index].name == previous_map.name)
@@ -260,6 +274,7 @@ void AVRPawn::cycle_offset()
 				map_index = FMath::RandRange(0, maps.Num() - 1);
 			}
 			current_map = maps[map_index];
+			maps.RemoveAt(map_index);
 		
 			// Set the vr_origin so the player will spawn at the right location no matter where they're standing
 			FVector origin_camera_difference = vr_origin->GetComponentLocation() - camera->GetComponentLocation();
@@ -288,21 +303,21 @@ void AVRPawn::cycle_offset()
 				current_map.spawn_points[0].Z));
 
 			// Unload all levels except the current map
-			for (int i = 0; i < maps.Num(); i++)
+			for (int i = 0; i < map_list.Num(); i++)
 			{
 				FLatentActionInfo latent_action_info;
 				latent_action_info.CallbackTarget = this;
 				latent_action_info.UUID = i;
 				latent_action_info.Linkage = 0;
 
-				if (maps[i].name == current_map.name)
+				if (map_list[i].name == current_map.name)
 				{
-					UGameplayStatics::LoadStreamLevel(this, maps[i].name, true, true, latent_action_info);
+					UGameplayStatics::LoadStreamLevel(this, map_list[i].name, true, true, latent_action_info);
 				}
 
 				else
 				{
-					UGameplayStatics::UnloadStreamLevel(this, maps[i].name, latent_action_info);
+					UGameplayStatics::UnloadStreamLevel(this, map_list[i].name, latent_action_info);
 				}
 			}
 
@@ -314,7 +329,7 @@ void AVRPawn::cycle_offset()
 		}
 	}
 	
-	UE_LOG(LogTemp, Log, TEXT("camera Forward (x, y, z): (%f, %f, %f)\n"), camera->GetForwardVector().X, camera->GetForwardVector().Y, camera->GetForwardVector().Z);
+	//UE_LOG(LogTemp, Log, TEXT("camera Forward (x, y, z): (%f, %f, %f)\n"), camera->GetForwardVector().X, camera->GetForwardVector().Y, camera->GetForwardVector().Z);
 
 }
 
@@ -382,14 +397,14 @@ void AVRPawn::initialize_map_data()
 	MapData office;
 	office.name = "BlueprintOffice";
 	office.rotation = FRotator(0.0f, 0.0f, 0.0f);
-	office.floor_height = 200.0f;
-	office.spawn_points.Add(FVector(100.0f, -1199.595703f, 192.002228f));
+	office.floor_height = 100.0f;
+	office.spawn_points.Add(FVector(100.0f, -1199.595703f, 100.0f));
 
 	MapData realistic_room;
 	realistic_room.name = "Room";
 	realistic_room.rotation = FRotator(0.0f, 0.0f, 180.0f);
-	realistic_room.floor_height = -0.75f; // Actual floor height is reported as 0, but this floor is thinner and doesn't touch the foot without this offset
-	realistic_room.spawn_points.Add(FVector(-106.195107f, 3177.424316f, -0.75f));
+	realistic_room.floor_height = 0.0f;
+	realistic_room.spawn_points.Add(FVector(-106.195107f, 3177.424316f, 0.0f));
 
 	MapData scifi_bunk;
 	scifi_bunk.name = "Scifi_Bunk";
@@ -434,12 +449,13 @@ void AVRPawn::initialize_map_data()
 	zen_walkway_wood.spawn_points.Add(FVector(402.5f, 315.0f, 12.75f));
 
 
-	maps.Add(office);
-	maps.Add(realistic_room);
-	maps.Add(scifi_bunk);
-	maps.Add(scifi_hallway);
-	maps.Add(sun_temple);
-	maps.Add(lightroom_day);
-	maps.Add(lightroom_night);
-	maps.Add(berlin_flat);
+	map_list.Add(office);
+	map_list.Add(realistic_room);
+	map_list.Add(scifi_bunk);
+	map_list.Add(scifi_hallway);
+	map_list.Add(sun_temple);
+	map_list.Add(lightroom_day);
+	map_list.Add(lightroom_night);
+	map_list.Add(berlin_flat);
+	map_list.Add(zen_walkway_wood);
 }

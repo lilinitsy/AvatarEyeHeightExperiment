@@ -100,6 +100,7 @@ class CEILPROJECT_API AVRPawn : public APawn
 		void scale_model_adjustment(float amount);
 
 	private:
+		TArray<MapData> map_list;
 		TArray<MapData> maps;
 		MapData current_map;
 		MapData previous_map;
