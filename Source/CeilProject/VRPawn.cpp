@@ -53,18 +53,23 @@ AVRPawn::AVRPawn()
 	left_hand->MotionSource = FXRMotionControllerBase::LeftHandSourceId;
 	left_hand->SetupAttachment(camera);
 
+	// Set properties specific to model gender
 	if (male_model)
 	{
 		original_avatar_standing_eyeball_height = 173.267804f;
-		 original_avatar_sitting_eyeball_height = 130.1741255;
+		original_avatar_sitting_eyeball_height = 130.1741255;
 		original_foot_size = 34.0f;
 	}
 
 	else
 	{
 		// set same properties for female model
+		original_avatar_standing_eyeball_height = 170.497841f;
+		original_avatar_sitting_eyeball_height = 130.1741105f;
+		original_foot_size = 30.0f;
 	}
 
+	// Set properties specific to seated or not seated
 	if (seated)
 	{
 		original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
@@ -81,9 +86,10 @@ AVRPawn::AVRPawn()
 		skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
 
+	// Flood the guess with ridiculously large value
 	for (int i = 0; i < 3; i++)
 	{
-		guesses[i] = 9999.0f;
+		guesses[i] = 999999.0f;
 	}
 
 	initialize_map_data();
@@ -106,6 +112,8 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+
+	// Write out the standing height values
 	if (tick_counter == 500 && calibrating_standing)
 	{
 		original_standing_camera_height = sum_height / 500.0f;
@@ -120,6 +128,7 @@ void AVRPawn::Tick(float DeltaTime)
 		tick_counter++;
 	}
 
+	// Write out the sitting height values
 	else if (tick_counter == 500 && !calibrating_standing)
 	{
 		original_sitting_camera_height = sum_height / 500.0f;
@@ -212,11 +221,6 @@ void AVRPawn::scale_model_offset(float offset)
 void AVRPawn::scale_model_adjustment(float amount)
 {
 	float scale = (original_camera_height + camera_attachment_point->GetRelativeTransform().GetLocation().Z + amount) / original_avatar_eyeball_height;
-	UE_LOG(LogTemp, Log, TEXT("ORIGINAL CAMERA HEIGHT: %f\n"), original_camera_height);
-	UE_LOG(LogTemp, Log, TEXT("CameraAttachmentPointZ: %f\n"), camera_attachment_point->GetRelativeTransform().GetLocation().Z);
-	UE_LOG(LogTemp, Log, TEXT("Amount: %f\n"), amount);
-	UE_LOG(LogTemp, Log, TEXT("ORIGINAL_AVATAR_EYEBALL_HEIGHT: %f|N"), original_avatar_eyeball_height);
-
 	skeletal_mesh->SetRelativeScale3D(FVector(scale, scale * (foot_size / original_foot_size), scale));
 }
 
