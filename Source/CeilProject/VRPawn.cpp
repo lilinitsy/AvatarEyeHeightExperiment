@@ -113,15 +113,14 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
 	// Write out the standing height values
 	if (tick_counter == 500 && calibrating_standing)
 	{
 		original_standing_camera_height = sum_height / 500.0f;
 		original_camera_height = original_standing_camera_height;
-		//UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
-		//UE_LOG(LogTemp, Log, TEXT("MIN STANDING HEIGHT: %f\n"), min_standing_height);
-		//UE_LOG(LogTemp, Log, TEXT("MAX STANDING HEIGHT: %f\n"), max_standing_height);
+		UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
+		UE_LOG(LogTemp, Log, TEXT("MIN STANDING HEIGHT: %f\n"), min_standing_height);
+		UE_LOG(LogTemp, Log, TEXT("MAX STANDING HEIGHT: %f\n"), max_standing_height);
 		FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_standing_camera_height) + "\n";
 		data += "Min Standing Eye Height: " + FString::SanitizeFloat(min_standing_height) + "\n";
 		data += "Max Standing Eye Height: " + FString::SanitizeFloat(max_standing_height) + "\n";
@@ -133,9 +132,9 @@ void AVRPawn::Tick(float DeltaTime)
 	else if (tick_counter == 500 && !calibrating_standing)
 	{
 		original_sitting_camera_height = sum_height / 500.0f;
-		//UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
-		//UE_LOG(LogTemp, Log, TEXT("MIN SITTING HEIGHT: %f\n"), min_sitting_height);
-		//UE_LOG(LogTemp, Log, TEXT("MAX SITTING HEIGHT: %f\n"), max_sitting_height);
+		UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
+		UE_LOG(LogTemp, Log, TEXT("MIN SITTING HEIGHT: %f\n"), min_sitting_height);
+		UE_LOG(LogTemp, Log, TEXT("MAX SITTING HEIGHT: %f\n"), max_sitting_height);
 		FString data = "Sitting Eye Height: " + FString::SanitizeFloat(original_sitting_camera_height) + "\n";
 		data += "Min Sitting Eye Height: " + FString::SanitizeFloat(min_sitting_height) + "\n";
 		data += "Max Sitting Eye Height: " + FString::SanitizeFloat(max_sitting_height) + "\n";
@@ -148,25 +147,25 @@ void AVRPawn::Tick(float DeltaTime)
 		if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_standing_height && tick_counter > 0)
 		{
 			min_standing_height = camera->GetRelativeTransform().GetLocation().Z;
-			//UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_standing_height);
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_standing_height);
 		}
 
 		if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_standing_height && tick_counter > 0)
 		{
 			max_standing_height = camera->GetRelativeTransform().GetLocation().Z;
-			//UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_standing_height);
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_standing_height);
 		}
 
 		if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_sitting_height && tick_counter > 0)
 		{
 			min_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
-			//UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_sitting_height);
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_sitting_height);
 		}
 
 		if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_sitting_height && tick_counter > 0)
 		{
 			max_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
-			//UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_sitting_height);
+			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_sitting_height);
 		}
 
 		sum_height += camera->GetRelativeTransform().GetLocation().Z;
@@ -228,12 +227,13 @@ void AVRPawn::scale_model_adjustment(float amount)
 
 void AVRPawn::cycle_offset()
 {
-
+	// Print guess so experimenter knows it was recorded
 	for (int i = 0; i < 3; i++)
 	{
 		UE_LOG(LogTemp, Log, TEXT("guess[%d]: %f\n"), i, guesses[i]);
 
 	}
+
 	if (camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
 	{
 		guesses[guess_counter] = camera->GetRelativeTransform().GetLocation().Z;
@@ -266,7 +266,6 @@ void AVRPawn::cycle_offset()
 			}
 
 			// Pick a new random map
-			UE_LOG(LogTemp, Log, TEXT("maps size: %d\n"), maps.Num());
 			int map_index = FMath::RandRange(0, maps.Num() - 1);
 			previous_map = current_map;
 			while (maps[map_index].name == previous_map.name)
@@ -327,6 +326,11 @@ void AVRPawn::cycle_offset()
 				guesses[i] = 9999.0f;
 			}
 		}
+	}
+
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Guess was not recorded!\n"));
 	}
 	
 	//UE_LOG(LogTemp, Log, TEXT("camera Forward (x, y, z): (%f, %f, %f)\n"), camera->GetForwardVector().X, camera->GetForwardVector().Y, camera->GetForwardVector().Z);
@@ -422,7 +426,13 @@ void AVRPawn::initialize_map_data()
 	sun_temple.name = "SunTemple";
 	sun_temple.rotation = FRotator(0.0f, 0.0f, 0.0f);
 	sun_temple.floor_height = 29.5f;
-	sun_temple.spawn_points.Add(FVector(25.398819f, 22351.001953f, 29.5f));
+	sun_temple.spawn_points.Add(FVector(-200.0f, 23084.0f, 29.5f));
+
+	MapData sun_temple_day;
+	sun_temple.name = "SunTempleDay";
+	sun_temple.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	sun_temple.floor_height = 29.5f;
+	sun_temple.spawn_points.Add(FVector(-630.0f, 22400.0f, 29.5f));
 
 	MapData lightroom_day;
 	lightroom_day.name = "Lightroom_day";
@@ -454,6 +464,7 @@ void AVRPawn::initialize_map_data()
 	map_list.Add(scifi_bunk);
 	map_list.Add(scifi_hallway);
 	map_list.Add(sun_temple);
+	map_list.Add(sun_temple_day);
 	map_list.Add(lightroom_day);
 	map_list.Add(lightroom_night);
 	map_list.Add(berlin_flat);
