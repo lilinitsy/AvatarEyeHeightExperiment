@@ -188,6 +188,8 @@ void AVRPawn::Tick(float DeltaTime)
 		skeletal_mesh->SetAnimation(standing_animation);
 		skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
+
+	map_time += DeltaTime;
 }
 
 // Called to bind functionality to input
@@ -238,6 +240,12 @@ void AVRPawn::cycle_offset()
 	{
 		guesses[guess_counter] = camera->GetRelativeTransform().GetLocation().Z;
 		guess_counter++;
+
+		if (guesses[0] != 9999.0f && guesses[1] == 9999.0f)
+		{
+			map_time_string = FString::SanitizeFloat(map_time);
+		}
+
 		if (guesses[2] != 9999.0f)
 		{
 			// Record the everything for this trial and write to file
@@ -253,7 +261,7 @@ void AVRPawn::cycle_offset()
 			FString current_map_string = current_map.name.ToString() + "\t";
 			FString offset_string = FString::SanitizeFloat(current_offset) + "\t";
 			FString camera_height_string = FString::SanitizeFloat(original_camera_height) + "\t";
-			FString data_string = current_map_string + offset_string + guess_height_string + camera_height_string + "\n";
+			FString data_string = current_map_string + offset_string + guess_height_string + camera_height_string + map_time_string + "\n";
 			write_data_to_file(data_string);
 
 			// Fade camera to black
@@ -326,6 +334,8 @@ void AVRPawn::cycle_offset()
 				guess_counter = 0;
 				guesses[i] = 9999.0f;
 			}
+
+			map_time = 0.0f;
 		}
 	}
 
@@ -333,9 +343,6 @@ void AVRPawn::cycle_offset()
 	{
 		UE_LOG(LogTemp, Log, TEXT("Guess was not recorded!\n"));
 	}
-	
-	//UE_LOG(LogTemp, Log, TEXT("camera Forward (x, y, z): (%f, %f, %f)\n"), camera->GetForwardVector().X, camera->GetForwardVector().Y, camera->GetForwardVector().Z);
-
 }
 
 
@@ -365,7 +372,7 @@ void AVRPawn::set_thumbstick_y(float y)
 	if (FGenericPlatformMath::Abs(y) > 0.1f)
 	{
 		float dt = GetWorld()->GetDeltaSeconds();
-		float camera_movement = thumbstick_speed_scale * FGenericPlatformMath::Abs(y) * y* dt;
+		float camera_movement = thumbstick_speed_scale * FGenericPlatformMath::Abs(y) * y * dt;
 		FVector camera_location = camera_attachment_point->GetComponentLocation();
 		camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, camera_location.Z + camera_movement));
 		scale_model_adjustment(camera_movement);
