@@ -276,6 +276,7 @@ void AVRPawn::cycle_offset()
 			maps.RemoveAt(map_index);
 		
 			// Set the vr_origin so the player will spawn at the right location no matter where they're standing
+			UE_LOG(LogTemp, Log, TEXT("MAP NAME BEFORE SPAWN CRASH: %s\n"), *current_map.name.ToString());
 			FVector origin_camera_difference = vr_origin->GetComponentLocation() - camera->GetComponentLocation();
 			vr_origin->SetWorldLocation(FVector(
 				current_map.spawn_points[0].X + origin_camera_difference.X,
@@ -364,7 +365,7 @@ void AVRPawn::set_thumbstick_y(float y)
 	if (FGenericPlatformMath::Abs(y) > 0.1f)
 	{
 		float dt = GetWorld()->GetDeltaSeconds();
-		float camera_movement = thumbstick_speed_scale * y * y * y* dt;
+		float camera_movement = thumbstick_speed_scale * FGenericPlatformMath::Abs(y) * y* dt;
 		FVector camera_location = camera_attachment_point->GetComponentLocation();
 		camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, camera_location.Z + camera_movement));
 		scale_model_adjustment(camera_movement);
@@ -429,10 +430,10 @@ void AVRPawn::initialize_map_data()
 	sun_temple.spawn_points.Add(FVector(-200.0f, 23084.0f, 29.5f));
 
 	MapData sun_temple_day;
-	sun_temple.name = "SunTempleDay";
-	sun_temple.rotation = FRotator(0.0f, 0.0f, 0.0f);
-	sun_temple.floor_height = 29.5f;
-	sun_temple.spawn_points.Add(FVector(-630.0f, 22400.0f, 29.5f));
+	sun_temple_day.name = "SunTempleDay";
+	sun_temple_day.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	sun_temple_day.floor_height = 29.5f;
+	sun_temple_day.spawn_points.Add(FVector(-630.0f, 22400.0f, 29.5f));
 
 	MapData lightroom_day;
 	lightroom_day.name = "Lightroom_day";
@@ -453,10 +454,16 @@ void AVRPawn::initialize_map_data()
 	berlin_flat.spawn_points.Add(FVector(86.0f, -78.0f, 0.0f));
 
 	MapData zen_walkway_wood;
-	zen_walkway_wood.name = "Zen_vis";
+	zen_walkway_wood.name = "Zen_Vis";
 	zen_walkway_wood.rotation = FRotator(0.0f, 0.0f, 0.0f);
 	zen_walkway_wood.floor_height = 12.75f;
 	zen_walkway_wood.spawn_points.Add(FVector(402.5f, 315.0f, 12.75f));
+
+	MapData zen_walkway_stone;
+	zen_walkway_stone.name = "Zen_Vis2";
+	zen_walkway_stone.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	zen_walkway_stone.floor_height = 0.0f;
+	zen_walkway_stone.spawn_points.Add(FVector(40.0f, -1170.0f, 0.0f));
 
 
 	map_list.Add(office);
@@ -469,4 +476,5 @@ void AVRPawn::initialize_map_data()
 	map_list.Add(lightroom_night);
 	map_list.Add(berlin_flat);
 	map_list.Add(zen_walkway_wood);
+	map_list.Add(zen_walkway_stone);
 }
