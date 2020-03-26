@@ -472,6 +472,12 @@ void AVRPawn::initialize_map_data()
 	zen_walkway_stone.floor_height = 0.0f;
 	zen_walkway_stone.spawn_points.Add(FVector(40.0f, -1170.0f, 0.0f));
 
+	MapData elven_ruins;
+	elven_ruins.name = "ElvenRuins";
+	elven_ruins.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	elven_ruins.floor_height = 0.0f;
+	elven_ruins.spawn_points.Add(FVector(-3400.0f, -120.0f, 8010.0f));
+
 
 	map_list.Add(office);
 	map_list.Add(realistic_room);
@@ -484,4 +490,5 @@ void AVRPawn::initialize_map_data()
 	map_list.Add(berlin_flat);
 	map_list.Add(zen_walkway_wood);
 	map_list.Add(zen_walkway_stone);
+	map_list.Add(elven_ruins);
 }
