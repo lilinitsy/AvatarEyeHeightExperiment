@@ -3,6 +3,7 @@
 #include "VRPawn.h"
 
 #include "Components/InputComponent.h"
+#include "Containers/UnrealString.h"
 #include "Engine/Engine.h"
 #include "Engine/EngineTypes.h"
 #include "GenericPlatform/GenericPlatformMath.h"
@@ -256,10 +257,11 @@ void AVRPawn::cycle_offset()
 			}
 			avg_guess_height /= 3.0f;
 			guess_height_string += FString::SanitizeFloat(avg_guess_height) + "\t";
+			FString nth_trial = FString::FromInt(trial_num) + "\t";
 			FString current_map_string = current_map.name.ToString() + "\t";
 			FString offset_string = FString::SanitizeFloat(current_offset) + "\t";
 			FString camera_height_string = FString::SanitizeFloat(original_camera_height) + "\t";
-			FString data_string = current_map_string + offset_string + guess_height_string + camera_height_string + map_time_string + "\n";
+			FString data_string = nth_trial + current_map_string + offset_string + guess_height_string + camera_height_string + map_time_string + "\n";
 			write_data_to_file(data_string);
 
 			// Fade camera to black
@@ -334,6 +336,7 @@ void AVRPawn::cycle_offset()
 			}
 
 			map_time = 0.0f;
+			trial_num++;
 		}
 	}
 

@@ -118,6 +118,7 @@ class CEILPROJECT_API AVRPawn : public APawn
 		float map_time = 0.0f;
 		FString map_time_string;
 		float guesses[3];
+		int trial_num = 0;
 
 		void initialize_map_data();
 		void swap_calibration();
