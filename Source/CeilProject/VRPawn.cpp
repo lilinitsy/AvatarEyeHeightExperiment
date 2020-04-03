@@ -54,7 +54,7 @@ AVRPawn::AVRPawn()
 	left_hand->SetupAttachment(camera);
 
 	// Set properties specific to model gender
-	if (male_model)
+	if(male_model)
 	{
 		original_avatar_standing_eyeball_height = 173.267804f;
 		original_avatar_sitting_eyeball_height = 130.1741255;
@@ -70,7 +70,7 @@ AVRPawn::AVRPawn()
 	}
 
 	// Set properties specific to seated or not seated
-	if (seated)
+	if(seated)
 	{
 		original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
 		original_camera_height = original_sitting_camera_height;
@@ -87,7 +87,7 @@ AVRPawn::AVRPawn()
 	}
 
 	// Flood the guess with ridiculously large value
-	for (int i = 0; i < 3; i++)
+	for(int i = 0; i < 3; i++)
 	{
 		guesses[i] = 999999.0f;
 	}
@@ -106,15 +106,13 @@ void AVRPawn::BeginPlay()
 }
 
 
-
-
 // Called every frame
 void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 	// Write out the standing height values
-	if (tick_counter == 500 && calibrating_standing)
+	if(tick_counter == 500 && calibrating_standing)
 	{
 		original_standing_camera_height = sum_height / 500.0f;
 		original_camera_height = original_standing_camera_height;
@@ -129,7 +127,7 @@ void AVRPawn::Tick(float DeltaTime)
 	}
 
 	// Write out the sitting height values
-	else if (tick_counter == 500 && !calibrating_standing)
+	else if(tick_counter == 500 && !calibrating_standing)
 	{
 		original_sitting_camera_height = sum_height / 500.0f;
 		UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
@@ -142,27 +140,27 @@ void AVRPawn::Tick(float DeltaTime)
 		tick_counter++;
 	}
 
-	else if (tick_counter < 500)
+	else if(tick_counter < 500)
 	{
-		if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_standing_height && tick_counter > 0)
+		if(calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_standing_height && tick_counter > 0)
 		{
 			min_standing_height = camera->GetRelativeTransform().GetLocation().Z;
 			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_standing_height);
 		}
 
-		if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_standing_height && tick_counter > 0)
+		if(calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_standing_height && tick_counter > 0)
 		{
 			max_standing_height = camera->GetRelativeTransform().GetLocation().Z;
 			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_standing_height);
 		}
 
-		if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_sitting_height && tick_counter > 0)
+		if(!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_sitting_height && tick_counter > 0)
 		{
 			min_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
 			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_sitting_height);
 		}
 
-		if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_sitting_height && tick_counter > 0)
+		if(!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_sitting_height && tick_counter > 0)
 		{
 			max_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
 			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_sitting_height);
@@ -173,7 +171,7 @@ void AVRPawn::Tick(float DeltaTime)
 	}
 
 
-	if (seated)
+	if(seated)
 	{
 		original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
 		original_camera_height = original_sitting_camera_height;
@@ -207,7 +205,7 @@ void AVRPawn::reset_hmd_origin()
 {
 	IHeadMountedDisplay *hmd = GEngine->XRSystem->GetHMDDevice();
 
-	if (hmd && hmd->IsHMDEnabled())
+	if(hmd && hmd->IsHMDEnabled())
 	{
 		GEngine->XRSystem->ResetOrientationAndPosition();
 	}
@@ -230,28 +228,28 @@ void AVRPawn::scale_model_adjustment(float amount)
 void AVRPawn::cycle_offset()
 {
 	// Print guess so experimenter knows it was recorded
-	for (int i = 0; i < 3; i++)
+	for(int i = 0; i < 3; i++)
 	{
 		UE_LOG(LogTemp, Log, TEXT("guess[%d]: %f\n"), i, guesses[i]);
 
 	}
 
-	if (camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
+	if(camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
 	{
 		guesses[guess_counter] = camera->GetRelativeTransform().GetLocation().Z;
 		guess_counter++;
 
-		if (guesses[0] != 9999.0f && guesses[1] == 9999.0f)
+		if(guesses[0] != 9999.0f && guesses[1] == 9999.0f)
 		{
 			map_time_string = FString::SanitizeFloat(map_time);
 		}
 
-		if (guesses[2] != 9999.0f)
+		if(guesses[2] != 9999.0f)
 		{
 			// Record the everything for this trial and write to file
 			FString guess_height_string;
 			float avg_guess_height = 0.0f;
-			for (int i = 0; i < 3; i++)
+			for(int i = 0; i < 3; i++)
 			{
 				guess_height_string += FString::SanitizeFloat(guesses[i]) + "\t";
 				avg_guess_height += guesses[i];
@@ -268,7 +266,7 @@ void AVRPawn::cycle_offset()
 			UGameplayStatics::GetPlayerController(GetWorld(), 0)->PlayerCameraManager->StartCameraFade(1.0f, 0.0f, 2.0f, FLinearColor(0.0f, 0.0f, 0.0f, 1.0f), false, false);
 
 			// Make sure that maps has entries. Reset if not (have gone through one full rotation)
-			if (maps.Num() == 0)
+			if(maps.Num() == 0)
 			{
 				maps = map_list;
 			}
@@ -311,14 +309,14 @@ void AVRPawn::cycle_offset()
 				current_map.spawn_points[0].Z));
 
 			// Unload all levels except the current map
-			for (int i = 0; i < map_list.Num(); i++)
+			for(int i = 0; i < map_list.Num(); i++)
 			{
 				FLatentActionInfo latent_action_info;
 				latent_action_info.CallbackTarget = this;
 				latent_action_info.UUID = i;
 				latent_action_info.Linkage = 0;
 
-				if (map_list[i].name == current_map.name)
+				if(map_list[i].name == current_map.name)
 				{
 					UGameplayStatics::LoadStreamLevel(this, map_list[i].name, true, true, latent_action_info);
 				}
@@ -329,7 +327,7 @@ void AVRPawn::cycle_offset()
 				}
 			}
 
-			for (int i = 0; i < 3; i++)
+			for(int i = 0; i < 3; i++)
 			{
 				guess_counter = 0;
 				guesses[i] = 9999.0f;
@@ -352,7 +350,7 @@ void AVRPawn::write_data_to_file(FString data)
 	FString save_file = FString("data.txt");
 	IPlatformFile& file = FPlatformFileManager::Get().GetPlatformFile();
 
-	if (file.CreateDirectory(*save_directory))
+	if(file.CreateDirectory(*save_directory))
 	{
 		FString absolute_file_path = save_directory + "/" + save_file;
 		FFileHelper::SaveStringToFile(data, *absolute_file_path, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
@@ -369,7 +367,7 @@ void AVRPawn::swap_calibration()
 
 void AVRPawn::set_thumbstick_y(float y)
 {
-	if (FGenericPlatformMath::Abs(y) > 0.1f)
+	if(FGenericPlatformMath::Abs(y) > 0.1f)
 	{
 		float dt = GetWorld()->GetDeltaSeconds();
 		float camera_movement = thumbstick_speed_scale * FGenericPlatformMath::Abs(y) * y * dt;
@@ -384,7 +382,7 @@ void AVRPawn::toggle_seating()
 {
 	seated = !seated;
 
-	if (seated)
+	if(seated)
 	{
 		original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
 		original_camera_height = original_sitting_camera_height;
@@ -399,8 +397,6 @@ void AVRPawn::toggle_seating()
 		skeletal_mesh->SetAnimation(standing_animation);
 		skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
-
-
 }
 
 
