@@ -30,7 +30,7 @@ void ALevelStreamingActor::BeginPlay()
 	latent_info.Linkage = 0;
 	//UGameplayStatics::OpenLevel(this, level_to_load);
 	UGameplayStatics::LoadStreamLevel(this, level_to_load, true, true, latent_info);
-	UGameplayStatics::UnloadStreamLevel(this, "BlueprintOffice", latent_info);
+	UGameplayStatics::UnloadStreamLevel(this, "BlueprintOffice", latent_info, true);
 }
 
 // Called every frame

@@ -15,6 +15,9 @@
 //MD5 Hash
 #include "Runtime/Core/Public/Misc/SecureHash.h"
 
+#include "Runtime/Engine/Public/VorbisAudioInfo.h"
+
+
 #include "StaticMeshResources.h"
 
 #include "HeadMountedDisplay.h"
@@ -22,7 +25,7 @@
 #include "GenericTeamAgentInterface.h"
 
 //For PIE error messages
-#include "MessageLog.h"
+#include "Runtime/Core/Public/Logging/MessageLog.h"
 #define LOCTEXT_NAMESPACE "Fun BP Lib"
 
 //Use MessasgeLog like this: (see GameplayStatics.cpp
@@ -50,7 +53,7 @@
 
 
 //Apex issues, can add iOS here  <3 Rama
-#if PLATFORM_ANDROID || PLATFORM_HTML5 || PLATFORM_IOS
+#if PLATFORM_ANDROID || PLATFORM_IOS
 #ifdef WITH_APEX
 #undef WITH_APEX
 #endif
@@ -298,6 +301,9 @@ ULevelStreaming* UVictoryBPFunctionLibrary::VictoryLoadLevelInstance(
 	int32 InstanceNumber,
 	FVector Location, FRotator Rotation,bool& Success
 ){ 
+	//! See .h deprecation
+	
+	/*
 	Success = false; 
     if(!WorldContextObject) return nullptr;
 	 
@@ -311,7 +317,7 @@ ULevelStreaming* UVictoryBPFunctionLibrary::VictoryLoadLevelInstance(
 	FName LevelFName = FName(*FullName);
     FString PackageFileName = FullName;   
 	
-    ULevelStreamingKismet* StreamingLevel = NewObject<ULevelStreamingKismet>(World, ULevelStreamingKismet::StaticClass(), NAME_None, RF_Transient, NULL);
+    ULevelStreamingDynamic* StreamingLevel = NewObject<ULevelStreamingDynamic>(World, ULevelStreamingDynamic::StaticClass(), NAME_None, RF_Transient, NULL);
 	
 	if(!StreamingLevel)
 	{
@@ -342,7 +348,7 @@ ULevelStreaming* UVictoryBPFunctionLibrary::VictoryLoadLevelInstance(
  
     StreamingLevel->LevelColor = FColor::MakeRandomColor();
     StreamingLevel->bShouldBeLoaded = true;
-    StreamingLevel->bShouldBeVisible = true;
+    StreamingLevel->SetShouldBeVisible(true);
     StreamingLevel->bShouldBlockOnLoad = false;
     StreamingLevel->bInitiallyLoaded = true;
     StreamingLevel->bInitiallyVisible = true;
@@ -369,6 +375,8 @@ ULevelStreaming* UVictoryBPFunctionLibrary::VictoryLoadLevelInstance(
       
 	Success = true;
     return StreamingLevel;
+	*/
+	return nullptr;
  }	
 	
 //~~~~~~~
@@ -1023,7 +1031,7 @@ void UVictoryBPFunctionLibrary::VictoryGetAllAxisKeyBindings(TArray<FVictoryInpu
 	const UInputSettings* Settings = GetDefault<UInputSettings>();
 	if(!Settings) return;
 	
-	const TArray<FInputAxisKeyMapping>& Axi = Settings->AxisMappings;
+	const TArray<FInputAxisKeyMapping>& Axi = Settings->GetAxisMappings();
 	
 	for(const FInputAxisKeyMapping& Each : Axi)
 	{
@@ -1036,7 +1044,7 @@ void UVictoryBPFunctionLibrary::VictoryRemoveAxisKeyBind(FVictoryInputAxis ToRem
 	UInputSettings* Settings = GetMutableDefault<UInputSettings>();
 	if(!Settings) return;
 	
-	TArray<FInputAxisKeyMapping>& Axi = Settings->AxisMappings;
+	TArray<FInputAxisKeyMapping>& Axi = const_cast<TArray<FInputAxisKeyMapping>&>(Settings->GetAxisMappings());
 	  
 	bool Found = false;
 	for(int32 v = 0; v < Axi.Num(); v++)
@@ -1070,7 +1078,7 @@ void UVictoryBPFunctionLibrary::VictoryGetAllActionKeyBindings(TArray<FVictoryIn
 	const UInputSettings* Settings = GetDefault<UInputSettings>();
 	if(!Settings) return;
 	
-	const TArray<FInputActionKeyMapping>& Actions = Settings->ActionMappings;
+	const TArray<FInputActionKeyMapping>& Actions = Settings->GetActionMappings();
 	
 	for(const FInputActionKeyMapping& Each : Actions)
 	{
@@ -1084,7 +1092,7 @@ void UVictoryBPFunctionLibrary::VictoryRemoveActionKeyBind(FVictoryInput ToRemov
 	UInputSettings* Settings = GetMutableDefault<UInputSettings>();
 	if(!Settings) return;
 	
-	TArray<FInputActionKeyMapping>& Actions = Settings->ActionMappings;
+	TArray<FInputActionKeyMapping>& Actions = const_cast<TArray<FInputActionKeyMapping>&>(Settings->GetActionMappings());
 	  
 	bool Found = false;
 	for(int32 v = 0; v < Actions.Num(); v++)
@@ -1119,7 +1127,7 @@ void UVictoryBPFunctionLibrary::VictoryGetAllAxisAndActionMappingsForKey(FKey Ke
 		const UInputSettings* Settings = GetDefault<UInputSettings>();
 	if(!Settings) return;
 	
-	const TArray<FInputActionKeyMapping>& Actions = Settings->ActionMappings;
+	const TArray<FInputActionKeyMapping>& Actions = Settings->GetActionMappings();
 	
 	for(const FInputActionKeyMapping& Each : Actions)
 	{
@@ -1129,7 +1137,7 @@ void UVictoryBPFunctionLibrary::VictoryGetAllAxisAndActionMappingsForKey(FKey Ke
 		}
 	}
 
-	const TArray<FInputAxisKeyMapping>& Axi = Settings->AxisMappings;
+	const TArray<FInputAxisKeyMapping>& Axi = Settings->GetAxisMappings();
 	
 	for(const FInputAxisKeyMapping& Each : Axi)
 	{  
@@ -1144,7 +1152,7 @@ bool UVictoryBPFunctionLibrary::VictoryReBindAxisKey(FVictoryInputAxis Original,
 	UInputSettings* Settings = const_cast<UInputSettings*>(GetDefault<UInputSettings>());
 	if(!Settings) return false;
 
-	TArray<FInputAxisKeyMapping>& Axi = Settings->AxisMappings;
+	TArray<FInputAxisKeyMapping>& Axi = const_cast<TArray<FInputAxisKeyMapping>&>(Settings->GetAxisMappings());
 	
 	//~~~
 	 
@@ -1181,7 +1189,7 @@ bool UVictoryBPFunctionLibrary::VictoryReBindActionKey(FVictoryInput Original, F
 	UInputSettings* Settings = const_cast<UInputSettings*>(GetDefault<UInputSettings>());
 	if(!Settings) return false;
 
-	TArray<FInputActionKeyMapping>& Actions = Settings->ActionMappings;
+	TArray<FInputActionKeyMapping>& Actions = const_cast<TArray<FInputActionKeyMapping>&>(Settings->GetActionMappings());
 	
 	//~~~
 	
@@ -1301,7 +1309,7 @@ bool UVictoryBPFunctionLibrary::IsWidgetOfClassInViewport(UObject* WorldContextO
 	return false;
 }
  
-void UVictoryBPFunctionLibrary::ServerTravel(UObject* WorldContextObject, FString MapName,bool bNotifyPlayers)
+void UVictoryBPFunctionLibrary::ServerTravel(UObject* WorldContextObject, FString MapName,bool bSkipNotifyPlayers)
 { 
 	if(!WorldContextObject) return;
 	 
@@ -1309,7 +1317,7 @@ void UVictoryBPFunctionLibrary::ServerTravel(UObject* WorldContextObject, FStrin
 	if(!World) return;
 	//~~~~~~~~~~~
 	 
-	World->ServerTravel(MapName,false,bNotifyPlayers); //abs //notify players
+	World->ServerTravel(MapName,false,bSkipNotifyPlayers); //abs //notify players
 }
 APlayerStart* UVictoryBPFunctionLibrary::GetPlayerStart(UObject* WorldContextObject,FString PlayerStartName)
 {
@@ -1822,7 +1830,7 @@ AActor* UVictoryBPFunctionLibrary::SpawnActorIntoLevel(UObject* WorldContextObje
 	//Get Level from Name!
 	ULevel* FoundLevel = NULL;
 	
-	for(const ULevelStreaming* EachLevel : World->StreamingLevels)
+	for(const ULevelStreaming* EachLevel : World->GetStreamingLevels())
 	{
 		if( ! EachLevel) continue;
 		//~~~~~~~~~~~~~~~~
@@ -1861,7 +1869,7 @@ void UVictoryBPFunctionLibrary::GetNamesOfLoadedLevels(UObject* WorldContextObje
 	//Get Level from Name!
 	ULevel* FoundLevel = NULL;
 	
-	for(const ULevelStreaming* EachLevel : World->StreamingLevels)
+	for(const ULevelStreaming* EachLevel : World->GetStreamingLevels())
 	{
 		if( ! EachLevel) continue;
 		//~~~~~~~~~~~~~~~~
@@ -2289,7 +2297,7 @@ void UVictoryBPFunctionLibrary::OperatingSystem__GetCurrentPlatform(
 	Android = 				PLATFORM_ANDROID;
 	Android_ARM  	=		PLATFORM_ANDROID_ARM;
 	Android_Vulkan	= 		PLATFORM_ANDROID_VULKAN;
-	HTML5 = 					PLATFORM_HTML5;
+	HTML5 = false;//PLATFORM_HTML5;
 	 
 	Apple =	 			PLATFORM_APPLE;
 }
@@ -3216,7 +3224,6 @@ AActor*  UVictoryBPFunctionLibrary::Traces__CharacterMeshTrace___ClosestBone(
 	//Simple Trace First
 	FCollisionQueryParams TraceParams(FName(TEXT("VictoryBPTrace::CharacterMeshTrace")), true, HitActor);
 	TraceParams.bTraceComplex = true;
-	TraceParams.bTraceAsyncScene = true;
 	TraceParams.bReturnPhysicalMaterial = false;
 	TraceParams.AddIgnoredActor(TraceOwner);
 	
@@ -3250,6 +3257,7 @@ AActor*  UVictoryBPFunctionLibrary::Traces__CharacterMeshTrace___ClosestBone(
 		TraceEnd, 
 		true, 
 		false, 
+		false,
 		OutImpactPoint, 
 		OutImpactNormal,
 		ClosestBoneName,
@@ -3287,7 +3295,6 @@ AActor* UVictoryBPFunctionLibrary::Traces__CharacterMeshTrace___ClosestSocket(
 	//Simple Trace First
 	FCollisionQueryParams TraceParams(FName(TEXT("VictoryBPTrace::CharacterMeshSocketTrace")), true, HitActor);
 	TraceParams.bTraceComplex = true;
-	TraceParams.bTraceAsyncScene = true;
 	TraceParams.bReturnPhysicalMaterial = false;
 	TraceParams.AddIgnoredActor(TraceOwner);
 	
@@ -3322,6 +3329,7 @@ AActor* UVictoryBPFunctionLibrary::Traces__CharacterMeshTrace___ClosestSocket(
 		TraceEnd, 
 		true, 
 		false, 
+		false,
 		OutImpactPoint, 
 		OutImpactNormal,
 		BoneName,
@@ -4050,7 +4058,7 @@ UTexture2D* UVictoryBPFunctionLibrary::LoadTexture2D_FromDDSFile(const FString& 
 			/* Create transient texture */
 			Texture = UTexture2D::CreateTransient( DDSLoadHelper.DDSHeader->dwWidth, DDSLoadHelper.DDSHeader->dwHeight, Format );
 			if(!Texture) return NULL;
-			Texture->PlatformData->NumSlices = 1;
+			//Texture->PlatformData->NumSlices = 1;
 			Texture->NeverStream = true;
 		
 			/* Get pointer to actual data */
@@ -4630,7 +4638,7 @@ int32 UVictoryBPFunctionLibrary::fillSoundWaveInfo(class USoundWave* sw, TArray<
     sw->NumChannels = info.NumChannels;
     sw->Duration = info.Duration;
     sw->RawPCMDataSize = info.SampleDataSize;
-    sw->SampleRate = info.SampleRate;
+    sw->SetSampleRate(info.SampleRate);
 
     return 0;
 }
@@ -4657,7 +4665,7 @@ int32 UVictoryBPFunctionLibrary::findSource(class USoundWave* sw, class FSoundSo
 		for (auto activeSoundIt(tmpActualSounds.CreateIterator()); activeSoundIt; ++activeSoundIt)
 		{
 			activeSound = *activeSoundIt;
-			for (auto WaveInstanceIt(activeSound->WaveInstances.CreateIterator()); WaveInstanceIt; ++WaveInstanceIt)
+			for (auto WaveInstanceIt(activeSound->GetWaveInstances().CreateConstIterator()); WaveInstanceIt; ++WaveInstanceIt)
 			{
 				sw_instance = WaveInstanceIt.Value();
 				if (sw_instance->WaveData->CompressedDataGuid == sw->CompressedDataGuid)
@@ -5093,19 +5101,19 @@ void UVictoryBPFunctionLibrary::SetGenericTeamId(AActor* Target, uint8 NewTeamId
 	}
 }
 
-FLevelStreamInstanceInfo::FLevelStreamInstanceInfo(ULevelStreamingKismet* LevelInstance)
+FLevelStreamInstanceInfo::FLevelStreamInstanceInfo(ULevelStreamingDynamic* LevelInstance)
 {
 	PackageName = LevelInstance->GetWorldAssetPackageFName();
 	PackageNameToLoad = LevelInstance->PackageNameToLoad;
 	Location = LevelInstance->LevelTransform.GetLocation();
 	Rotation = LevelInstance->LevelTransform.GetRotation().Rotator();
-	bShouldBeLoaded = LevelInstance->bShouldBeLoaded;
-	bShouldBeVisible = LevelInstance->bShouldBeVisible;
+	bShouldBeLoaded = LevelInstance->HasLoadedLevel();
+	bShouldBeVisible = LevelInstance->GetShouldBeVisibleFlag();
 	bShouldBlockOnLoad = LevelInstance->bShouldBlockOnLoad;
-	LODIndex = LevelInstance->LevelLODIndex;
+	LODIndex = LevelInstance->GetLevelLODIndex();
 };
 
-FLevelStreamInstanceInfo UVictoryBPFunctionLibrary::GetLevelInstanceInfo(ULevelStreamingKismet* LevelInstance)
+FLevelStreamInstanceInfo UVictoryBPFunctionLibrary::GetLevelInstanceInfo(ULevelStreamingDynamic* LevelInstance)
 {
 	return FLevelStreamInstanceInfo(LevelInstance);
 }
@@ -5120,7 +5128,7 @@ void UVictoryBPFunctionLibrary::AddToStreamingLevels(UObject* WorldContextObject
 	{
 		bool bAlreadyExists = false;
 
-		for (auto StreamingLevel : World->StreamingLevels)
+		for (auto StreamingLevel : World->GetStreamingLevels())
 		{
 			if (StreamingLevel->GetWorldAssetPackageFName() == LevelInstanceInfo.PackageName)
 			{
@@ -5144,11 +5152,11 @@ void UVictoryBPFunctionLibrary::AddToStreamingLevels(UObject* WorldContextObject
 			GEngine->DelayGarbageCollection();
 
 			// Setup streaming level object that will load specified map
-			ULevelStreamingKismet* StreamingLevel = NewObject<ULevelStreamingKismet>(World, ULevelStreamingKismet::StaticClass(), NAME_None, RF_Transient, nullptr);
+			ULevelStreamingDynamic* StreamingLevel = NewObject<ULevelStreamingDynamic>(World, ULevelStreamingDynamic::StaticClass(), NAME_None, RF_Transient, nullptr);
 			StreamingLevel->SetWorldAssetByPackageName(PackageName);
 			StreamingLevel->LevelColor = FColor::MakeRandomColor();
-			StreamingLevel->bShouldBeLoaded = LevelInstanceInfo.bShouldBeLoaded;
-			StreamingLevel->bShouldBeVisible = LevelInstanceInfo.bShouldBeVisible;
+			StreamingLevel->SetShouldBeLoaded(LevelInstanceInfo.bShouldBeLoaded);
+			StreamingLevel->SetShouldBeVisible(LevelInstanceInfo.bShouldBeVisible);
 			StreamingLevel->bShouldBlockOnLoad = LevelInstanceInfo.bShouldBlockOnLoad;
 			StreamingLevel->bInitiallyLoaded = true;
 			StreamingLevel->bInitiallyVisible = true;
@@ -5160,7 +5168,7 @@ void UVictoryBPFunctionLibrary::AddToStreamingLevels(UObject* WorldContextObject
 			StreamingLevel->PackageNameToLoad = LevelInstanceInfo.PackageNameToLoad;
 
 			// Add the new level to world.
-			World->StreamingLevels.Add(StreamingLevel);
+			World->AddStreamingLevel(StreamingLevel);
 
 			World->FlushLevelStreaming(EFlushLevelStreamingType::Full);
 		}
@@ -5199,7 +5207,7 @@ void UVictoryBPFunctionLibrary::RemoveFromStreamingLevels(UObject* WorldContextO
 #endif
 
 		// Find the level to unload
-		for (auto StreamingLevel : World->StreamingLevels)
+		for (auto StreamingLevel : World->GetStreamingLevels())
 		{
 
 			FName LoadedPackageName = StreamingLevel->GetWorldAssetPackageFName();
@@ -5213,10 +5221,10 @@ void UVictoryBPFunctionLibrary::RemoveFromStreamingLevels(UObject* WorldContextO
 			if(PackageNameToCheck == LoadedPackageName)
 			{
 				// This unload the level
-				StreamingLevel->bShouldBeLoaded = false;
-				StreamingLevel->bShouldBeVisible = false;
+				StreamingLevel->SetShouldBeLoaded(false);
+				StreamingLevel->SetShouldBeVisible(false);
 				// This removes the level from the streaming level list
-				StreamingLevel->bIsRequestingUnloadAndRemoval = true;
+				StreamingLevel->SetIsRequestingUnloadAndRemoval(true);
 				// Force a refresh of the world
 				World->FlushLevelStreaming(EFlushLevelStreamingType::Full);
 				break;

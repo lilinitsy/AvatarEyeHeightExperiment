@@ -30,6 +30,8 @@
 #include "Developer/TargetPlatform/Public/Interfaces/IAudioFormat.h"
 #include "VorbisAudioInfo.h"
 
+#include "Runtime/Engine/Classes/Engine/LevelStreamingDynamic.h"
+
 //Texture2D
 //#include "Engine/Texture2D.h"
 #include "DDSLoader.h"
@@ -207,7 +209,7 @@ struct FLevelStreamInstanceInfo
 
 	FLevelStreamInstanceInfo() {}
 
-	FLevelStreamInstanceInfo(ULevelStreamingKismet* LevelInstance);
+	FLevelStreamInstanceInfo(ULevelStreamingDynamic* LevelInstance);
 
 	FString ToString() const
 	{
@@ -417,7 +419,7 @@ class VICTORYBPLIBRARY_API UVictoryBPFunctionLibrary : public UBlueprintFunction
 	UFUNCTION(BlueprintCallable, Category = "Victory BP Library|Physics", meta=(Keywords="APEX Piece fracture damage PhysX Physics"))
 	static bool VictoryDestructible_DestroyChunk(UDestructibleComponent* DestructibleComp, int32 HitItem);
 
-
+ 
 	//~~~~~~~~~~
 	// 	Joy ISM
 	//~~~~~~~~~~
@@ -668,7 +670,7 @@ class VICTORYBPLIBRARY_API UVictoryBPFunctionLibrary : public UBlueprintFunction
 
 	/** Server Travel! This is an async load level process which allows you to put up a UMG widget while the level loading occurs! */
 	UFUNCTION(BlueprintCallable, Category = "Victory BP Library|System",meta=(WorldContext="WorldContextObject"))
-	static void ServerTravel(UObject* WorldContextObject,FString MapName, bool bNotifyPlayers=true);
+	static void ServerTravel(UObject* WorldContextObject,FString MapName, bool bSkipNotifyPlayers=false);
 
 	/** Get a Player Start by Name! */
 	UFUNCTION(BlueprintCallable, Category = "Victory BP Library|System",meta=(WorldContext="WorldContextObject"))
@@ -1798,7 +1800,7 @@ static void SetBloomIntensity(APostProcessVolume* PostProcessVolume,float Intens
 	static void SetGenericTeamId(AActor* Target, uint8 NewTeamId);
 
 	UFUNCTION(Category = "Victory BP Library|LevelStreaming", BlueprintCallable)
-	static FLevelStreamInstanceInfo GetLevelInstanceInfo(ULevelStreamingKismet* LevelInstance);
+	static FLevelStreamInstanceInfo GetLevelInstanceInfo(ULevelStreamingDynamic* LevelInstance);
 
 	UFUNCTION(Category = "Victory BP Library|LevelStreaming", BlueprintCallable, Meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject"))
 	static void AddToStreamingLevels(UObject* WorldContextObject, const FLevelStreamInstanceInfo& LevelInstanceInfo);
@@ -1807,15 +1809,15 @@ static void SetBloomIntensity(APostProcessVolume* PostProcessVolume,float Intens
 	static void RemoveFromStreamingLevels(UObject* WorldContextObject, const FLevelStreamInstanceInfo& LevelInstanceInfo);
 
 	UFUNCTION(Category = "Victory BP Library|LevelStreaming", BlueprintCallable, Meta = (keywords="remove"))
-	static void HideStreamingLevel(ULevelStreamingKismet* LevelInstance)
+	static void HideStreamingLevel(ULevelStreamingDynamic* LevelInstance)
 	{
-		if(LevelInstance) LevelInstance->bShouldBeVisible = false;
+		if(LevelInstance) LevelInstance->SetShouldBeVisible(false);
 	}
 
 	UFUNCTION(Category = "Victory BP Library|LevelStreaming", BlueprintCallable, Meta = (keywords="remove"))
-	static void UnloadStreamingLevel(ULevelStreamingKismet* LevelInstance)
+	static void UnloadStreamingLevel(ULevelStreamingDynamic* LevelInstance)
 	{
-		if(LevelInstance) LevelInstance->bShouldBeLoaded = false;
+		if(LevelInstance) LevelInstance->SetShouldBeLoaded(false);
 	}
 
 	static bool GenericArray_SortCompare(const UProperty* LeftProperty, void* LeftValuePtr, const UProperty* RightProperty, void* RightValuePtr);

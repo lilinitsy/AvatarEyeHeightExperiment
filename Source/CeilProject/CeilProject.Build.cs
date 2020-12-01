@@ -11,7 +11,7 @@ public class CeilProject : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
 
         // VR REQUIRED DEPENDENCIES
-		PrivateDependencyModuleNames.AddRange(new string[] { "HeadMountedDisplay", "SteamVR"  });
+		PrivateDependencyModuleNames.AddRange(new string[] { "HeadMountedDisplay"});
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

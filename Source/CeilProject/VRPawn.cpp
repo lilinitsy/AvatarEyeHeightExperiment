@@ -228,11 +228,13 @@ void AVRPawn::scale_model_adjustment(float amount)
 
 void AVRPawn::cycle_offset()
 {
+	UE_LOG(LogTemp, Log, TEXT("Action mapping for CYCLE_OFFSET selected"));
+	FString data = "Action mapping for CYCLE_OFFSET selected";
+	write_data_to_file(data);
 	// Print guess so experimenter knows it was recorded
 	for(int i = 0; i < 3; i++)
 	{
 		UE_LOG(LogTemp, Log, TEXT("guess[%d]: %f\n"), i, guesses[i]);
-
 	}
 
 	if(camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
@@ -325,7 +327,7 @@ void AVRPawn::cycle_offset()
 
 				else
 				{
-					UGameplayStatics::UnloadStreamLevel(this, map_list[i].name, latent_action_info);
+					UGameplayStatics::UnloadStreamLevel(this, map_list[i].name, latent_action_info, true);
 				}
 			}
 
@@ -370,6 +372,7 @@ void AVRPawn::swap_calibration()
 
 void AVRPawn::set_thumbstick_y(float y)
 {
+	UE_LOG(LogTemp, Log, TEXT("Action mapping for SET_THUMBSTICK_Y selected"));
 	if(FGenericPlatformMath::Abs(y) > 0.1f)
 	{
 		float dt = GetWorld()->GetDeltaSeconds();
