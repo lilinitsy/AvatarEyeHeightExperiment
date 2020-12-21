@@ -10,7 +10,7 @@
 struct CEILPROJECT_API MapData
 {
 	FName name;
-	FRotator rotation;				// do we want this to be TArray?
-	float floor_height;				// do we want this to be TArray?
+	FRotator rotation;				
+	float floor_height;				
 	TArray<FVector> spawn_points;
 };

@@ -104,20 +104,24 @@ class CEILPROJECT_API AVRPawn : public APawn
 		TArray<MapData> maps;
 		MapData current_map;
 		MapData previous_map;
+
 		int tick_counter = 0;
 		float sum_height = 0.0f;
 		float current_offset = 0.0f;
+
 		bool calibrating_standing = true;
+
 		float original_avatar_eyeball_height;
 		float original_camera_height;
-		int guess_counter = 0;
 		float min_standing_height = 10000.0f;
 		float max_standing_height = 0.0f;
 		float min_sitting_height = 10000.0f;
 		float max_sitting_height = 0.0f;
+
+		int guess_counter = 0;
 		float map_time = 0.0f;
-		FString map_time_string;
-		float guesses[3];
+		float total_guessed_offset = 0.0f;
+
 		int trial_num = 0;
 
 		void initialize_map_data();
