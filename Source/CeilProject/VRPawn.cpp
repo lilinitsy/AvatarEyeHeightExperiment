@@ -223,22 +223,21 @@ void AVRPawn::scale_model_adjustment(float amount)
 
 void AVRPawn::cycle_offset()
 {
-	UE_LOG(LogTemp, Log, TEXT("Action mapping for CYCLE_OFFSET selected"));
-	FString data = "Action mapping for CYCLE_OFFSET selected";
-	write_data_to_file(data);
+	// Remove this block for release
+	{
+		UE_LOG(LogTemp, Log, TEXT("Action mapping for CYCLE_OFFSET selected"));
+		FString data = "Action mapping for CYCLE_OFFSET selected";
+		write_data_to_file(data);
+	}
 
-
-	FString map_time_string = FString::SanitizeFloat(map_time);
-	
 	// Record the everything for this trial and write to file
-
-
+	FString map_time_string = FString::SanitizeFloat(map_time);
 	FString guess_height_string = FString::SanitizeFloat(total_guessed_offset + camera->GetRelativeTransform().GetLocation().Z) + "\t";
 	FString nth_trial = FString::FromInt(trial_num) + "\t";
 	FString current_map_string = current_map.name.ToString() + "\t";
 	FString offset_string = FString::SanitizeFloat(current_offset) + "\t";
-	FString camera_height_string = FString::SanitizeFloat(original_camera_height) + "\t";
-	FString data_string = nth_trial + current_map_string + offset_string + guess_height_string + camera_height_string + map_time_string + "\n";
+	FString original_camera_height_string = FString::SanitizeFloat(original_camera_height) + "\t";
+	FString data_string = nth_trial + current_map_string + offset_string + guess_height_string + original_camera_height_string + map_time_string + "\n";
 	write_data_to_file(data_string);
 
 	// Fade camera to black
@@ -261,7 +260,6 @@ void AVRPawn::cycle_offset()
 	maps.RemoveAt(map_index);
 		
 	// Set the vr_origin so the player will spawn at the right location no matter where they're standing
-	UE_LOG(LogTemp, Log, TEXT("MAP NAME BEFORE SPAWN CRASH: %s\n"), *current_map.name.ToString());
 	FVector origin_camera_difference = vr_origin->GetComponentLocation() - camera->GetComponentLocation();
 	vr_origin->SetWorldLocation(FVector(
 		current_map.spawn_points[0].X + origin_camera_difference.X,

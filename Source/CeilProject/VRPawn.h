@@ -100,28 +100,34 @@ class CEILPROJECT_API AVRPawn : public APawn
 		void scale_model_adjustment(float amount);
 
 	private:
+		// Greater map_list to save which maps are used, and then maps will be the random maps that are used for each set of n trials.
 		TArray<MapData> map_list;
 		TArray<MapData> maps;
 		MapData current_map;
 		MapData previous_map;
 
+		// Setup variables
 		int tick_counter = 0;
 		float sum_height = 0.0f;
 		float current_offset = 0.0f;
 
 		bool calibrating_standing = true;
 
+		// Saved after calibration to be used for properly scaling the model
 		float original_avatar_eyeball_height;
 		float original_camera_height;
+
+		// Given default valuse that will be recalculated during calibraiton period
 		float min_standing_height = 10000.0f;
 		float max_standing_height = 0.0f;
 		float min_sitting_height = 10000.0f;
 		float max_sitting_height = 0.0f;
 
-		int guess_counter = 0;
+		// Time spent per map
 		float map_time = 0.0f;
-		float total_guessed_offset = 0.0f;
 
+		// The total offset moved on the controllers. Reset each trial.
+		float total_guessed_offset = 0.0f;
 		int trial_num = 0;
 
 		void initialize_map_data();
