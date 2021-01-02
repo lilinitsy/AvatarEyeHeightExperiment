@@ -10,6 +10,7 @@
 #include "CoreMinimal.h"
 #include "Engine/SkeletalMesh.h"
 #include "GameFramework/Pawn.h"
+#include "HeadMountedDisplayFunctionLibrary.h"
 #include "MotionControllerComponent.h"
 #include "VRPawn.generated.h"
 
@@ -129,6 +130,13 @@ class CEILPROJECT_API AVRPawn : public APawn
 		// The total offset moved on the controllers. Reset each trial.
 		float total_guessed_offset = 0.0f;
 		int trial_num = 0;
+
+		// Variables to get around oculus height tracking being broken.
+		// Use floor_height* to record floor height
+		bool floor_height_recorded = false;
+		float floor_height = 0.0f;
+		// Use begin_calibration to signify whether calibration should begin
+		bool begin_calibration = false;
 
 		void initialize_map_data();
 		void swap_calibration();

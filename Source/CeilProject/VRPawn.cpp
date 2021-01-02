@@ -87,6 +87,7 @@ AVRPawn::AVRPawn()
 		skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
 
+
 	initialize_map_data();
 	maps = map_list;
 }
@@ -98,6 +99,7 @@ void AVRPawn::BeginPlay()
 	Super::BeginPlay();
 
 	original_camera_location = camera_attachment_point->GetRelativeTransform().GetLocation();
+	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
 }
 
 
@@ -105,6 +107,7 @@ void AVRPawn::BeginPlay()
 void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
 
 	// Write out the standing height values
 	if(tick_counter == 500 && calibrating_standing)
@@ -138,6 +141,8 @@ void AVRPawn::Tick(float DeltaTime)
 	// Debugging: Remove block before release
 	else if(tick_counter < 500)
 	{
+		FString data = "Camera z: " + FString::SanitizeFloat(camera->GetRelativeTransform().GetLocation().Z) + "\n";
+		write_data_to_file(data);
 		if(calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_standing_height && tick_counter > 0)
 		{
 			min_standing_height = camera->GetRelativeTransform().GetLocation().Z;
@@ -223,13 +228,6 @@ void AVRPawn::scale_model_adjustment(float amount)
 
 void AVRPawn::cycle_offset()
 {
-	// Remove this block for release
-	{
-		UE_LOG(LogTemp, Log, TEXT("Action mapping for CYCLE_OFFSET selected"));
-		FString data = "Action mapping for CYCLE_OFFSET selected";
-		write_data_to_file(data);
-	}
-
 	// Record the everything for this trial and write to file
 	FString map_time_string = FString::SanitizeFloat(map_time);
 	FString guess_height_string = FString::SanitizeFloat(total_guessed_offset + camera->GetRelativeTransform().GetLocation().Z) + "\t";
@@ -333,9 +331,9 @@ void AVRPawn::swap_calibration()
 
 void AVRPawn::set_thumbstick_y(float y)
 {
-	UE_LOG(LogTemp, Log, TEXT("Action mapping for SET_THUMBSTICK_Y selected"));
 	if(FGenericPlatformMath::Abs(y) > 0.1f)
 	{
+		UE_LOG(LogTemp, Log, TEXT("Action mapping for SET_THUMBSTICK_Y selected"));
 		float dt = GetWorld()->GetDeltaSeconds();
 		float camera_movement = thumbstick_speed_scale * FGenericPlatformMath::Abs(y) * y * dt;
 		total_guessed_offset += camera_movement;
