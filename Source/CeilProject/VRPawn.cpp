@@ -114,7 +114,7 @@ void AVRPawn::Tick(float DeltaTime)
 	// Write out the standing height values
 	if(tick_counter == 500 && calibrating_standing)
 	{
-		original_standing_camera_height = sum_height / 500.0f;
+		original_standing_camera_height = sum_height / tick_counter;
 		original_camera_height = original_standing_camera_height;
 		UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
 		UE_LOG(LogTemp, Log, TEXT("MIN STANDING HEIGHT: %f\n"), min_standing_height);
@@ -129,7 +129,7 @@ void AVRPawn::Tick(float DeltaTime)
 	// Write out the sitting height values
 	else if(tick_counter == 500 && !calibrating_standing)
 	{
-		original_sitting_camera_height = sum_height / 500.0f;
+		original_sitting_camera_height = sum_height / tick_counter;
 		UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
 		UE_LOG(LogTemp, Log, TEXT("MIN SITTING HEIGHT: %f\n"), min_sitting_height);
 		UE_LOG(LogTemp, Log, TEXT("MAX SITTING HEIGHT: %f\n"), max_sitting_height);
