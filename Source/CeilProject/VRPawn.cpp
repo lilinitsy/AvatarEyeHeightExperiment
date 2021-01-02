@@ -110,6 +110,7 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// TODO: Don't write out intermediate values to data file
 
 	// Write out the standing height values
 	if(tick_counter == 500 && calibrating_standing)
