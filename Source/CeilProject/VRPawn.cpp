@@ -99,6 +99,8 @@ void AVRPawn::BeginPlay()
 	Super::BeginPlay();
 
 	original_camera_location = camera_attachment_point->GetRelativeTransform().GetLocation();
+
+	// Specific for Oculus devices
 	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
 }
 
