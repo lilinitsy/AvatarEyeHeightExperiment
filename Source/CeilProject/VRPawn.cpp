@@ -144,8 +144,6 @@ void AVRPawn::Tick(float DeltaTime)
 	// Debugging: Remove block before release
 	else if(tick_counter < 500)
 	{
-		FString data = "Camera z: " + FString::SanitizeFloat(camera->GetRelativeTransform().GetLocation().Z) + "\n";
-		write_data_to_file(data);
 		if(calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_standing_height && tick_counter > 0)
 		{
 			min_standing_height = camera->GetRelativeTransform().GetLocation().Z;
@@ -308,6 +306,12 @@ void AVRPawn::cycle_offset()
 	map_time = 0.0f;
 	total_guessed_offset = 0.0f;
 	trial_num++;
+
+	// Temp to get left controller offset.
+	{
+		FString tmpstr = "Left controller position: " + FString::SanitizeFloat(left_hand->GetRelativeTransform().GetLocation().Z) + "\t";
+		write_data_to_file(tmpstr);
+	}
 }
 
 
