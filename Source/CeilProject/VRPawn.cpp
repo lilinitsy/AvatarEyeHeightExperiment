@@ -141,7 +141,6 @@ void AVRPawn::Tick(float DeltaTime)
 		tick_counter++;
 	}
 
-	// Debugging: Remove block before release
 	else if(tick_counter < 500)
 	{
 		if(calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_standing_height && tick_counter > 0)
@@ -229,88 +228,91 @@ void AVRPawn::scale_model_adjustment(float amount)
 
 void AVRPawn::cycle_offset()
 {
-	// Record the everything for this trial and write to file
-	FString map_time_string = FString::SanitizeFloat(map_time);
-	FString guess_height_string = FString::SanitizeFloat(total_guessed_offset + camera->GetRelativeTransform().GetLocation().Z) + "\t";
-	FString nth_trial = FString::FromInt(trial_num) + "\t";
-	FString current_map_string = current_map.name.ToString() + "\t";
-	FString offset_string = FString::SanitizeFloat(current_offset) + "\t";
-	FString original_camera_height_string = FString::SanitizeFloat(original_camera_height) + "\t";
-	FString data_string = nth_trial + current_map_string + offset_string + guess_height_string + original_camera_height_string + map_time_string + "\n";
-	write_data_to_file(data_string);
-
-	// Fade camera to black
-	UGameplayStatics::GetPlayerController(GetWorld(), 0)->PlayerCameraManager->StartCameraFade(1.0f, 0.0f, 2.0f, FLinearColor(0.0f, 0.0f, 0.0f, 1.0f), false, false);
-
-	// Make sure that maps has entries. Reset if not (have gone through one full rotation)
-	if(maps.Num() == 0)
+	if (camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
 	{
-		maps = map_list;
-	}
+		// Record the everything for this trial and write to file
+		FString map_time_string = FString::SanitizeFloat(map_time);
+		FString guess_height_string = FString::SanitizeFloat(total_guessed_offset + camera->GetRelativeTransform().GetLocation().Z) + "\t";
+		FString nth_trial = FString::FromInt(trial_num) + "\t";
+		FString current_map_string = current_map.name.ToString() + "\t";
+		FString offset_string = FString::SanitizeFloat(current_offset) + "\t";
+		FString original_camera_height_string = FString::SanitizeFloat(original_camera_height) + "\t";
+		FString data_string = nth_trial + current_map_string + offset_string + guess_height_string + original_camera_height_string + map_time_string + "\n";
+		write_data_to_file(data_string);
 
-	// Pick a new random map
-	int map_index = FMath::RandRange(0, maps.Num() - 1);
-	previous_map = current_map;
-	while (maps[map_index].name == previous_map.name)
-	{
-		map_index = FMath::RandRange(0, maps.Num() - 1);
-	}
-	current_map = maps[map_index];
-	maps.RemoveAt(map_index);
-		
-	// Set the vr_origin so the player will spawn at the right location no matter where they're standing
-	FVector origin_camera_difference = vr_origin->GetComponentLocation() - camera->GetComponentLocation();
-	vr_origin->SetWorldLocation(FVector(
-		current_map.spawn_points[0].X + origin_camera_difference.X,
-		current_map.spawn_points[0].Y + origin_camera_difference.Y,
-		current_map.spawn_points[0].Z));
+		// Fade camera to black
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->PlayerCameraManager->StartCameraFade(1.0f, 0.0f, 2.0f, FLinearColor(0.0f, 0.0f, 0.0f, 1.0f), false, false);
 
-	// Get random offset
-	float offset = FMath::RandRange(-80.0f, 80.0f);
-	current_offset = offset;
-	scale_model_offset(offset);
-
-	// Move camera height by offset
-	camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, original_camera_location.Z + offset));
-
-	// move skeletal mesh to line eyeball up with camera
-	FVector camera_forward = camera->GetForwardVector();
-	FVector middle_eye_position = skeletal_mesh->GetSocketLocation("cc_base_m_eye");
-	FVector skeletal_position = skeletal_mesh->GetComponentLocation();
-	FVector skeletal_attachment_eye_difference = middle_eye_position - skeletal_position;
-	skeletal_attachment_point->SetRelativeRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
-	skeletal_attachment_point->SetWorldLocation(FVector(
-		current_map.spawn_points[0].X - skeletal_attachment_eye_difference.X * camera_forward.X,
-		current_map.spawn_points[0].Y - skeletal_attachment_eye_difference.Y * camera_forward.Y,
-		current_map.spawn_points[0].Z));
-
-	// Unload all levels except the current map
-	for(int i = 0; i < map_list.Num(); i++)
-	{
-		FLatentActionInfo latent_action_info;
-		latent_action_info.CallbackTarget = this;
-		latent_action_info.UUID = i;
-		latent_action_info.Linkage = 0;
-
-		if(map_list[i].name == current_map.name)
+		// Make sure that maps has entries. Reset if not (have gone through one full rotation)
+		if (maps.Num() == 0)
 		{
-			UGameplayStatics::LoadStreamLevel(this, map_list[i].name, true, true, latent_action_info);
+			maps = map_list;
 		}
 
-		else
+		// Pick a new random map
+		int map_index = FMath::RandRange(0, maps.Num() - 1);
+		previous_map = current_map;
+		while (maps[map_index].name == previous_map.name)
 		{
-			UGameplayStatics::UnloadStreamLevel(this, map_list[i].name, latent_action_info, true);
+			map_index = FMath::RandRange(0, maps.Num() - 1);
 		}
-	}
+		current_map = maps[map_index];
+		maps.RemoveAt(map_index);
 
-	map_time = 0.0f;
-	total_guessed_offset = 0.0f;
-	trial_num++;
+		// Set the vr_origin so the player will spawn at the right location no matter where they're standing
+		FVector origin_camera_difference = vr_origin->GetComponentLocation() - camera->GetComponentLocation();
+		vr_origin->SetWorldLocation(FVector(
+			current_map.spawn_points[0].X + origin_camera_difference.X,
+			current_map.spawn_points[0].Y + origin_camera_difference.Y,
+			current_map.spawn_points[0].Z));
 
-	// Temp to get left controller offset.
-	{
-		FString tmpstr = "Left controller position: " + FString::SanitizeFloat(left_hand->GetRelativeTransform().GetLocation().Z) + "\t";
-		write_data_to_file(tmpstr);
+		// Get random offset
+		float offset = FMath::RandRange(-80.0f, 80.0f);
+		current_offset = offset;
+		scale_model_offset(offset);
+
+		// Move camera height by offset
+		camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, original_camera_location.Z + offset));
+
+		// move skeletal mesh to line eyeball up with camera
+		FVector camera_forward = camera->GetForwardVector();
+		FVector middle_eye_position = skeletal_mesh->GetSocketLocation("cc_base_m_eye");
+		FVector skeletal_position = skeletal_mesh->GetComponentLocation();
+		FVector skeletal_attachment_eye_difference = middle_eye_position - skeletal_position;
+		skeletal_attachment_point->SetRelativeRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
+		skeletal_attachment_point->SetWorldLocation(FVector(
+			current_map.spawn_points[0].X - skeletal_attachment_eye_difference.X * camera_forward.X,
+			current_map.spawn_points[0].Y - skeletal_attachment_eye_difference.Y * camera_forward.Y,
+			current_map.spawn_points[0].Z));
+
+		// Unload all levels except the current map
+		for (int i = 0; i < map_list.Num(); i++)
+		{
+			FLatentActionInfo latent_action_info;
+			latent_action_info.CallbackTarget = this;
+			latent_action_info.UUID = i;
+			latent_action_info.Linkage = 0;
+
+			if (map_list[i].name == current_map.name)
+			{
+				UGameplayStatics::LoadStreamLevel(this, map_list[i].name, true, true, latent_action_info);
+			}
+
+			else
+			{
+				UGameplayStatics::UnloadStreamLevel(this, map_list[i].name, latent_action_info, true);
+			}
+		}
+
+		map_time = 0.0f;
+		total_guessed_offset = 0.0f;
+		trial_num++;
+
+		// Temp to get left controller offset.
+		{
+			FString tmpstr = "Left controller position: " + FString::SanitizeFloat(left_hand->GetRelativeTransform().GetLocation().Z) + "\n";
+			write_data_to_file(tmpstr);
+		}
 	}
 }
 
