@@ -12,6 +12,7 @@
 #include "GameFramework/Pawn.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "MotionControllerComponent.h"
+#include "Sound/SoundCue.h"
 #include "VRPawn.generated.h"
 
 
@@ -88,6 +89,27 @@ class CEILPROJECT_API AVRPawn : public APawn
 
 		UPROPERTY(EditAnywhere, Category = "Motion Parameters")
 		float thumbstick_speed_scale;
+
+
+		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
+		USoundCue *instruction_audio;
+
+		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
+		USoundCue *stand_calib_1;
+
+		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
+		USoundCue *sit_calib_1;
+
+		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
+		USoundCue *commence_standing_trials_2;
+
+		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
+		USoundCue *commence_sitting_trials_2;
+
+		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
+		USoundCue *calibration_completed;
+
+		
 
 		AVRPawn();
 		virtual void Tick(float DeltaTime) override;
