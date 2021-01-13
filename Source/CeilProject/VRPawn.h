@@ -109,6 +109,9 @@ class CEILPROJECT_API AVRPawn : public APawn
 		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
 		USoundCue *calibration_completed;
 
+		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
+		USoundCue *look_straight_ahead;
+
 		
 
 		AVRPawn();
