@@ -110,85 +110,97 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// TODO: Don't write out intermediate values to data file
-
-	// Write out the standing height values
-	if(tick_counter == 500 && calibrating_standing)
+	if (!calibration_started && !instruction_audio_started)
 	{
-		original_standing_camera_height = sum_height / tick_counter;
-		original_camera_height = original_standing_camera_height;
-		UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
-		UE_LOG(LogTemp, Log, TEXT("MIN STANDING HEIGHT: %f\n"), min_standing_height);
-		UE_LOG(LogTemp, Log, TEXT("MAX STANDING HEIGHT: %f\n"), max_standing_height);
-		FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_standing_camera_height) + "\n";
-		data += "Min Standing Eye Height: " + FString::SanitizeFloat(min_standing_height) + "\n";
-		data += "Max Standing Eye Height: " + FString::SanitizeFloat(max_standing_height) + "\n";
-		write_data_to_file(data);
-		tick_counter++;
+		//UAudioComponent* audio_component = UGameplayStatics::SpawnSound2D(this, instruction_audio, 1.0f);
+		UGameplayStatics::PlaySound2D(this, instruction_audio, 5.0f);
+		instruction_audio_started = true;
 	}
 
-	// Write out the sitting height values
-	else if(tick_counter == 500 && !calibrating_standing)
+	else if(calibration_started)
 	{
-		original_sitting_camera_height = sum_height / tick_counter;
-		UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
-		UE_LOG(LogTemp, Log, TEXT("MIN SITTING HEIGHT: %f\n"), min_sitting_height);
-		UE_LOG(LogTemp, Log, TEXT("MAX SITTING HEIGHT: %f\n"), max_sitting_height);
-		FString data = "Sitting Eye Height: " + FString::SanitizeFloat(original_sitting_camera_height) + "\n";
-		data += "Min Sitting Eye Height: " + FString::SanitizeFloat(min_sitting_height) + "\n";
-		data += "Max Sitting Eye Height: " + FString::SanitizeFloat(max_sitting_height) + "\n";
-		write_data_to_file(data);
-		tick_counter++;
-	}
+		// TODO: Don't write out intermediate values to data file
 
-	else if(tick_counter < 500)
-	{
-		if(calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_standing_height && tick_counter > 0)
+		// Write out the standing height values
+		if (tick_counter == 500 && calibrating_standing)
 		{
-			min_standing_height = camera->GetRelativeTransform().GetLocation().Z;
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_standing_height);
+			original_standing_camera_height = sum_height / tick_counter;
+			original_camera_height = original_standing_camera_height;
+			UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
+			UE_LOG(LogTemp, Log, TEXT("MIN STANDING HEIGHT: %f\n"), min_standing_height);
+			UE_LOG(LogTemp, Log, TEXT("MAX STANDING HEIGHT: %f\n"), max_standing_height);
+			FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_standing_camera_height) + "\n";
+			data += "Min Standing Eye Height: " + FString::SanitizeFloat(min_standing_height) + "\n";
+			data += "Max Standing Eye Height: " + FString::SanitizeFloat(max_standing_height) + "\n";
+			write_data_to_file(data);
+			calibration_started = false;
+			tick_counter++;
 		}
 
-		if(calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_standing_height && tick_counter > 0)
+		// Write out the sitting height values
+		else if (tick_counter == 500 && !calibrating_standing)
 		{
-			max_standing_height = camera->GetRelativeTransform().GetLocation().Z;
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_standing_height);
+			original_sitting_camera_height = sum_height / tick_counter;
+			UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
+			UE_LOG(LogTemp, Log, TEXT("MIN SITTING HEIGHT: %f\n"), min_sitting_height);
+			UE_LOG(LogTemp, Log, TEXT("MAX SITTING HEIGHT: %f\n"), max_sitting_height);
+			FString data = "Sitting Eye Height: " + FString::SanitizeFloat(original_sitting_camera_height) + "\n";
+			data += "Min Sitting Eye Height: " + FString::SanitizeFloat(min_sitting_height) + "\n";
+			data += "Max Sitting Eye Height: " + FString::SanitizeFloat(max_sitting_height) + "\n";
+			write_data_to_file(data);
+			calibration_started = false;
+			tick_counter++;
 		}
 
-		if(!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_sitting_height && tick_counter > 0)
+		else if (tick_counter < 500)
 		{
-			min_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_sitting_height);
+			if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_standing_height && tick_counter > 0)
+			{
+				min_standing_height = camera->GetRelativeTransform().GetLocation().Z;
+				UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_standing_height);
+			}
+
+			if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_standing_height && tick_counter > 0)
+			{
+				max_standing_height = camera->GetRelativeTransform().GetLocation().Z;
+				UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_standing_height);
+			}
+
+			if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_sitting_height && tick_counter > 0)
+			{
+				min_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
+				UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_sitting_height);
+			}
+
+			if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_sitting_height && tick_counter > 0)
+			{
+				max_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
+				UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_sitting_height);
+			}
+
+			sum_height += camera->GetRelativeTransform().GetLocation().Z;
+			tick_counter++;
 		}
 
-		if(!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_sitting_height && tick_counter > 0)
+
+		if (seated)
 		{
-			max_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
-			UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_sitting_height);
+			original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
+			original_camera_height = original_sitting_camera_height;
+			skeletal_mesh->SetAnimation(sitting_animation);
+			skeletal_mesh->PlayAnimation(sitting_animation, true);
 		}
 
-		sum_height += camera->GetRelativeTransform().GetLocation().Z;
-		tick_counter++;
+		else
+		{
+			original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
+			original_camera_height = original_standing_camera_height;
+			skeletal_mesh->SetAnimation(standing_animation);
+			skeletal_mesh->PlayAnimation(standing_animation, true);
+		}
+
+		map_time += DeltaTime;
 	}
-
-
-	if(seated)
-	{
-		original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
-		original_camera_height = original_sitting_camera_height;
-		skeletal_mesh->SetAnimation(sitting_animation);
-		skeletal_mesh->PlayAnimation(sitting_animation, true);
-	}
-
-	else
-	{
-		original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
-		original_camera_height = original_standing_camera_height;
-		skeletal_mesh->SetAnimation(standing_animation);
-		skeletal_mesh->PlayAnimation(standing_animation, true);
-	}
-
-	map_time += DeltaTime;
 }
 
 // Called to bind functionality to input
@@ -334,6 +346,7 @@ void AVRPawn::write_data_to_file(FString data)
 void AVRPawn::swap_calibration()
 {
 	calibrating_standing = !calibrating_standing;
+	calibration_started = true;
 	sum_height = 0.0f;
 	tick_counter = 0;
 }

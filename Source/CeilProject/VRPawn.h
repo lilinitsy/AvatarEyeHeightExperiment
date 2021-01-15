@@ -92,25 +92,25 @@ class CEILPROJECT_API AVRPawn : public APawn
 
 
 		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundCue *instruction_audio;
+		USoundWave *instruction_audio;
 
 		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundCue *stand_calib_1;
+		USoundWave *stand_calib_1;
 
 		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundCue *sit_calib_1;
+		USoundWave *sit_calib_1;
 
 		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundCue *commence_standing_trials_2;
+		USoundWave *commence_standing_trials_2;
 
 		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundCue *commence_sitting_trials_2;
+		USoundWave *commence_sitting_trials_2;
 
 		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundCue *calibration_completed;
+		USoundWave *calibration_completed;
 
 		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundCue *look_straight_ahead;
+		USoundWave *look_straight_ahead;
 
 		
 
@@ -137,7 +137,7 @@ class CEILPROJECT_API AVRPawn : public APawn
 		float sum_height = 0.0f;
 		float current_offset = 0.0f;
 
-		bool calibrating_standing = true;
+		bool calibrating_standing = false; // This will be swapped on first press which will make calibration the first thing that's started.
 
 		// Saved after calibration to be used for properly scaling the model
 		float original_avatar_eyeball_height;
@@ -161,7 +161,10 @@ class CEILPROJECT_API AVRPawn : public APawn
 		bool floor_height_recorded = false;
 		float floor_height = 0.0f;
 		// Use begin_calibration to signify whether calibration should begin
-		bool begin_calibration = false;
+
+		bool calibration_started = false;
+
+		bool instruction_audio_started = false;
 
 		void initialize_map_data();
 		void swap_calibration();
