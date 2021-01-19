@@ -13,6 +13,7 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "MotionControllerComponent.h"
 #include "Sound/SoundCue.h"
+#include "Components/AudioComponent.h" 
 #include "VRPawn.generated.h"
 
 
@@ -165,7 +166,16 @@ class CEILPROJECT_API AVRPawn : public APawn
 		bool calibration_started = false;
 
 		bool instruction_audio_started = false;
+		bool instruction_audio_finished = false;
+
+		bool stand_calib_1_started = false;
+
+		float instruction_audio_time = 0.0f;
+
 
 		void initialize_map_data();
 		void swap_calibration();
+
+		// Sound hack functions
+		void check_audio_finished(float end_time, float &audio_time, bool &sound_finished);
 };

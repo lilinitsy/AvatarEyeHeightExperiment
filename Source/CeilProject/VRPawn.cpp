@@ -14,6 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Misc/FileHelper.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Misc/App.h"
 #include "XRMotionControllerBase.h"
 
 // Sets default values
@@ -110,16 +111,29 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+
+	check_audio_finished(34.0f, instruction_audio_time, instruction_audio_finished);
+
 	if (!calibration_started && !instruction_audio_started)
 	{
-		//UAudioComponent* audio_component = UGameplayStatics::SpawnSound2D(this, instruction_audio, 1.0f);
 		UGameplayStatics::PlaySound2D(this, instruction_audio, 5.0f);
 		instruction_audio_started = true;
+	}
+
+	else if (!calibration_started && instruction_audio_finished && !stand_calib_1_started)
+	{
+		UGameplayStatics::PlaySound2D(this, stand_calib_1, 5.0f);
+		stand_calib_1_started = true;
 	}
 
 	else if(calibration_started)
 	{
 		// TODO: Don't write out intermediate values to data file
+
+
+		
+
+
 
 		// Write out the standing height values
 		if (tick_counter == 500 && calibrating_standing)
@@ -135,6 +149,8 @@ void AVRPawn::Tick(float DeltaTime)
 			write_data_to_file(data);
 			calibration_started = false;
 			tick_counter++;
+
+			UGameplayStatics::PlaySound2D(this, calibration_completed, 5.0f);
 		}
 
 		// Write out the sitting height values
@@ -346,6 +362,7 @@ void AVRPawn::write_data_to_file(FString data)
 void AVRPawn::swap_calibration()
 {
 	calibrating_standing = !calibrating_standing;
+	UE_LOG(LogTemp, Log, TEXT("Calibration swapped"));
 	calibration_started = true;
 	sum_height = 0.0f;
 	tick_counter = 0;
@@ -477,3 +494,15 @@ void AVRPawn::initialize_map_data()
 	map_list.Add(zen_walkway_stone);
 	map_list.Add(elven_ruins);
 }
+
+
+void AVRPawn::check_audio_finished(float end_time, float &audio_time, bool &sound_finished)
+{
+	audio_time += FApp::GetDeltaTime();
+
+	if (audio_time > end_time)
+	{
+		sound_finished = true;
+	}
+}
+
