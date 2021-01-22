@@ -113,25 +113,20 @@ void AVRPawn::Tick(float DeltaTime)
 
 
 	check_audio_finished(34.0f, instruction_audio_time, instruction_audio_finished);
+	check_audio_finished(11.0f, stand_calib_1_time, stand_calib_1_finished);
+	check_audio_finished(13.0f, sit_calib_1_time, sit_calib_1_finished);
 
-	if (!calibration_started && !instruction_audio_started)
+	/*if (standing_calibrated && sitting_calibrated && commence_standing_trials_2_started && commence_standing_trials_2_started)
 	{
-		UGameplayStatics::PlaySound2D(this, instruction_audio, 5.0f);
-		instruction_audio_started = true;
-	}
+		UGameplayStatics::PlaySound2D(this, calibration_completed, 5.0f);
+	}*/
 
-	else if (!calibration_started && instruction_audio_finished && !stand_calib_1_started)
-	{
-		UGameplayStatics::PlaySound2D(this, stand_calib_1, 5.0f);
-		stand_calib_1_started = true;
-	}
-
-	else if(calibration_started)
+	if (calibration_started)
 	{
 		// TODO: Don't write out intermediate values to data file
 
 
-		
+
 
 
 
@@ -148,6 +143,7 @@ void AVRPawn::Tick(float DeltaTime)
 			data += "Max Standing Eye Height: " + FString::SanitizeFloat(max_standing_height) + "\n";
 			write_data_to_file(data);
 			calibration_started = false;
+			standing_calibrated = true;
 			tick_counter++;
 
 			UGameplayStatics::PlaySound2D(this, calibration_completed, 5.0f);
@@ -165,6 +161,7 @@ void AVRPawn::Tick(float DeltaTime)
 			data += "Max Sitting Eye Height: " + FString::SanitizeFloat(max_sitting_height) + "\n";
 			write_data_to_file(data);
 			calibration_started = false;
+			sitting_calibrated = true;
 			tick_counter++;
 		}
 
@@ -216,6 +213,43 @@ void AVRPawn::Tick(float DeltaTime)
 		}
 
 		map_time += DeltaTime;
+	}
+
+	else if (!calibration_started && !instruction_audio_started)
+	{
+		UGameplayStatics::PlaySound2D(this, instruction_audio, 5.0f);
+		instruction_audio_started = true;
+	}
+
+	else if (!calibration_started && instruction_audio_finished && !stand_calib_1_started && !standing_calibrated)
+	{
+		UGameplayStatics::PlaySound2D(this, stand_calib_1, 5.0f);
+		stand_calib_1_started = true;
+	}
+
+	else if (!calibration_started && instruction_audio_finished && stand_calib_1_finished && !sit_calib_1_started && standing_calibrated && !sitting_calibrated)
+	{
+		UGameplayStatics::PlaySound2D(this, sit_calib_1, 5.0f);
+		sit_calib_1_started = true;
+	}
+
+
+	else if (standing_calibrated && sitting_calibrated && !commence_standing_trials_2_started && standing_trials_currently)
+	{
+		UGameplayStatics::PlaySound2D(this, commence_standing_trials_2, 5.0f);
+		commence_standing_trials_2_started = true;
+	}
+
+	/*else if (!calibration_started && instruction_audio_finished && stand_calib_1_finished && sit_calib_1_finished && standing_calibrated && sitting_calibrated && !commence_standing_trials_2_started && !seated)
+	{
+		UGameplayStatics::PlaySound2D(this, commence_standing_trials_2, 5.0f);
+		commence_standing_trials_2_started = true;
+	}*/
+
+	else if (!calibration_started && instruction_audio_finished && stand_calib_1_finished && sit_calib_1_finished && standing_calibrated && sitting_calibrated && !commence_sitting_trials_2_started && seated)
+	{
+		UGameplayStatics::PlaySound2D(this, commence_sitting_trials_2, 5.0f);
+		commence_sitting_trials_2_started = true;
 	}
 }
 

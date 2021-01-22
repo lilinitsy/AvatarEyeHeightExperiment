@@ -161,16 +161,33 @@ class CEILPROJECT_API AVRPawn : public APawn
 		// Use floor_height* to record floor height
 		bool floor_height_recorded = false;
 		float floor_height = 0.0f;
+
 		// Use begin_calibration to signify whether calibration should begin
 
 		bool calibration_started = false;
+		bool standing_calibrated = false;
+		bool sitting_calibrated = false;
 
 		bool instruction_audio_started = false;
 		bool instruction_audio_finished = false;
 
 		bool stand_calib_1_started = false;
+		bool stand_calib_1_finished = false;
 
+		bool sit_calib_1_started = false;
+		bool sit_calib_1_finished = false;
+
+		bool commence_standing_trials_2_started = false;
+		bool commence_sitting_trials_2_started = false;
+
+		// true = standing happening, false = sitting happening, randomize this at start for random groups and log it
+		bool standing_trials_currently = true;
+		
 		float instruction_audio_time = 0.0f;
+		float stand_calib_1_time = 0.0f;
+		float sit_calib_1_time = 0.0f;
+		float commence_standing_trials_2_time = 0.0f;
+
 
 
 		void initialize_map_data();
