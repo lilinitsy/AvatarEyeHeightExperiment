@@ -88,6 +88,7 @@ AVRPawn::AVRPawn()
 		skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
 
+	//standing_trials_currently = FMath::RandRange(0, 1);
 
 	initialize_map_data();
 	maps = map_list;
@@ -145,8 +146,6 @@ void AVRPawn::Tick(float DeltaTime)
 			calibration_started = false;
 			standing_calibrated = true;
 			tick_counter++;
-
-			UGameplayStatics::PlaySound2D(this, calibration_completed, 5.0f);
 		}
 
 		// Write out the sitting height values
@@ -240,13 +239,8 @@ void AVRPawn::Tick(float DeltaTime)
 		commence_standing_trials_2_started = true;
 	}
 
-	/*else if (!calibration_started && instruction_audio_finished && stand_calib_1_finished && sit_calib_1_finished && standing_calibrated && sitting_calibrated && !commence_standing_trials_2_started && !seated)
-	{
-		UGameplayStatics::PlaySound2D(this, commence_standing_trials_2, 5.0f);
-		commence_standing_trials_2_started = true;
-	}*/
 
-	else if (!calibration_started && instruction_audio_finished && stand_calib_1_finished && sit_calib_1_finished && standing_calibrated && sitting_calibrated && !commence_sitting_trials_2_started && seated)
+	else if (standing_calibrated && sitting_calibrated && !commence_sitting_trials_2 && !standing_trials_currently)
 	{
 		UGameplayStatics::PlaySound2D(this, commence_sitting_trials_2, 5.0f);
 		commence_sitting_trials_2_started = true;
@@ -375,6 +369,11 @@ void AVRPawn::cycle_offset()
 			FString tmpstr = "Left controller position: " + FString::SanitizeFloat(left_hand->GetRelativeTransform().GetLocation().Z) + "\n";
 			write_data_to_file(tmpstr);
 		}
+	}
+
+	else
+	{
+		UGameplayStatics::PlaySound2D(this, look_straight_ahead, 5.0f);
 	}
 }
 
