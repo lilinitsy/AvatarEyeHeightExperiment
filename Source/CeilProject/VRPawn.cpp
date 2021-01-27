@@ -363,12 +363,6 @@ void AVRPawn::cycle_offset()
 		map_time = 0.0f;
 		total_guessed_offset = 0.0f;
 		trial_num++;
-
-		// Temp to get left controller offset.
-		{
-			FString tmpstr = "Left controller position: " + FString::SanitizeFloat(left_hand->GetRelativeTransform().GetLocation().Z) + "\n";
-			write_data_to_file(tmpstr);
-		}
 	}
 
 	else
