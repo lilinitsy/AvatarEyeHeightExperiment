@@ -112,6 +112,7 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	compute_headset_motion_information();
 
 	check_audio_finished(34.0f, instruction_audio_time, instruction_audio_finished);
 	check_audio_finished(11.0f, stand_calib_1_time, stand_calib_1_finished);
@@ -383,6 +384,46 @@ void AVRPawn::write_data_to_file(FString data)
 		FString absolute_file_path = save_directory + "/" + save_file;
 		FFileHelper::SaveStringToFile(data, *absolute_file_path, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
 	}
+}
+
+
+// For figuring out headset motion vectors
+void AVRPawn::write_headset_motion_data_to_file(FString rot_data, FString pos_data)
+{
+	FString save_directory = FPaths::ProjectDir();
+	FString save_file = FString("headset_motion.txt");
+	IPlatformFile& file = FPlatformFileManager::Get().GetPlatformFile();
+
+	if (file.CreateDirectory(*save_directory))
+	{
+		FString absolute_file_path = save_directory + "/" + save_file;
+		FFileHelper::SaveStringToFile(rot_data, *absolute_file_path, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
+		FFileHelper::SaveStringToFile(pos_data, *absolute_file_path, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
+	}
+}
+
+// For figuring out headset motion vectors
+void AVRPawn::compute_headset_motion_information()
+{
+	FRotator current_direction_vec = camera->GetComponentRotation();
+	FVector current_camera_position_vec = camera->GetRelativeTransform().GetLocation();
+
+	if (current_direction_vec.Pitch < min_y_camera_look.Pitch)
+	{
+		min_y_camera_look = current_direction_vec;
+		min_y_camera_look_pos = current_camera_position_vec;
+	}
+
+	if (current_direction_vec.Pitch > max_y_camera_look.Pitch)
+	{
+		max_y_camera_look = current_direction_vec;
+		max_y_camera_look_pos = current_camera_position_vec;
+	}
+
+	FString rot_data = "(" + FString::SanitizeFloat(current_direction_vec.Pitch) + ", " + FString::SanitizeFloat(current_direction_vec.Roll) + ", " + FString::SanitizeFloat(current_direction_vec.Yaw) + ")\n";
+	FString pos_data = "(" + FString::SanitizeFloat(current_camera_position_vec.X) + ", " + FString::SanitizeFloat(current_camera_position_vec.Y) + ", " + FString::SanitizeFloat(current_camera_position_vec.Z) + ")\n";
+
+	write_headset_motion_data_to_file(rot_data, pos_data);
 }
 
 

@@ -188,7 +188,13 @@ class CEILPROJECT_API AVRPawn : public APawn
 		float sit_calib_1_time = 0.0f;
 		float commence_standing_trials_2_time = 0.0f;
 
-
+		// Figure out headset motion vectors
+		void write_headset_motion_data_to_file(FString rot_data, FString pos_data);
+		void compute_headset_motion_information();
+		FRotator min_y_camera_look = FRotator(0.0f, 0.0f, 0.0f);
+		FRotator max_y_camera_look = FRotator(0.0f, 0.0f, 0.0f);
+		FVector min_y_camera_look_pos = FVector(0.0f, 0.0f, 0.0f);
+		FVector max_y_camera_look_pos = FVector(0.0f, 0.0f, 0.0f);
 
 		void initialize_map_data();
 		void swap_calibration();
