@@ -246,6 +246,11 @@ void AVRPawn::Tick(float DeltaTime)
 		UGameplayStatics::PlaySound2D(this, commence_sitting_trials_2, 5.0f);
 		commence_sitting_trials_2_started = true;
 	}
+
+	if (commence_standing_trials_2_started)
+	{
+		compute_headset_motion_information();
+	}
 }
 
 // Called to bind functionality to input
@@ -391,13 +396,21 @@ void AVRPawn::write_data_to_file(FString data)
 void AVRPawn::write_headset_motion_data_to_file(FString rot_data, FString pos_data)
 {
 	FString save_directory = FPaths::ProjectDir();
-	FString save_file = FString("headset_motion.txt");
+	FString save_file = FString("headset_rotation.txt");
 	IPlatformFile& file = FPlatformFileManager::Get().GetPlatformFile();
 
 	if (file.CreateDirectory(*save_directory))
 	{
 		FString absolute_file_path = save_directory + "/" + save_file;
 		FFileHelper::SaveStringToFile(rot_data, *absolute_file_path, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
+	}
+
+	save_file = FString("headset_position.txt");
+	file = FPlatformFileManager::Get().GetPlatformFile();
+
+	if (file.CreateDirectory(*save_directory))
+	{
+		FString absolute_file_path = save_directory + "/" + save_file;
 		FFileHelper::SaveStringToFile(pos_data, *absolute_file_path, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
 	}
 }
