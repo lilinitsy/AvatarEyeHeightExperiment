@@ -433,8 +433,8 @@ void AVRPawn::compute_headset_motion_information()
 		max_y_camera_look_pos = current_camera_position_vec;
 	}
 
-	FString rot_data = FString::SanitizeFloat(current_direction_vec.Pitch) + ", " + FString::SanitizeFloat(current_direction_vec.Roll) + ", " + FString::SanitizeFloat(current_direction_vec.Yaw);
-	FString pos_data = FString::SanitizeFloat(current_camera_position_vec.X) + ", " + FString::SanitizeFloat(current_camera_position_vec.Y) + ", " + FString::SanitizeFloat(current_camera_position_vec.Z);
+	FString rot_data = FString::SanitizeFloat(current_direction_vec.Pitch) + ", " + FString::SanitizeFloat(current_direction_vec.Roll) + ", " + FString::SanitizeFloat(current_direction_vec.Yaw) + "\n";
+	FString pos_data = FString::SanitizeFloat(current_camera_position_vec.X) + ", " + FString::SanitizeFloat(current_camera_position_vec.Y) + ", " + FString::SanitizeFloat(current_camera_position_vec.Z) + "\n";
 
 	write_headset_motion_data_to_file(rot_data, pos_data);
 }
