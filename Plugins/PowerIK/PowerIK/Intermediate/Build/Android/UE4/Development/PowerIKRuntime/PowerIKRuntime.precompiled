@@ -1,0 +1,8 @@
+{
+	"OutputFiles": [
+		"Module.PowerIKRuntime.cppa7.o",
+		"Module.PowerIKRuntime.cppa8.o",
+		"Module.PowerIKRuntime.gen.cppa7.o",
+		"Module.PowerIKRuntime.gen.cppa8.o"
+	]
+}

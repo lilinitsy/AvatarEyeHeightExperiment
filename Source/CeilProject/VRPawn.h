@@ -50,11 +50,12 @@ class CEILPROJECT_API AVRPawn : public APawn
 		UPROPERTY(VisibleAnywhere, Category = "Motion Controllers")
 		UMotionControllerComponent *right_hand;
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+		/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 		UAnimationAsset *standing_animation;
 
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 		UAnimationAsset *sitting_animation;
+		*/
 
 		UPROPERTY(EditAnywhere, Category = "General Parameters")
 		bool seated = false;

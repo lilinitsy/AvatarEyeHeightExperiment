@@ -33,6 +33,7 @@ AVRPawn::AVRPawn()
 	skeletal_mesh->SetupAttachment(skeletal_attachment_point);
 	skeletal_mesh->bEditableWhenInherited = true;
 	skeletal_mesh->SetMobility(EComponentMobility::Movable);
+	skeletal_mesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 
 	// camera setup
 	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
@@ -76,16 +77,16 @@ AVRPawn::AVRPawn()
 	{
 		original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
 		original_camera_height = original_sitting_camera_height;
-		skeletal_mesh->SetAnimation(sitting_animation);
-		skeletal_mesh->PlayAnimation(sitting_animation, true);
+		//skeletal_mesh->SetAnimation(sitting_animation);
+		//skeletal_mesh->PlayAnimation(sitting_animation, true);
 	}
 
 	else
 	{
 		original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
 		original_camera_height = original_standing_camera_height;
-		skeletal_mesh->SetAnimation(standing_animation);
-		skeletal_mesh->PlayAnimation(standing_animation, true);
+		//skeletal_mesh->SetAnimation(standing_animation);
+		//skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
 
 	//standing_trials_currently = FMath::RandRange(0, 1);
@@ -200,16 +201,16 @@ void AVRPawn::Tick(float DeltaTime)
 		{
 			original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
 			original_camera_height = original_sitting_camera_height;
-			skeletal_mesh->SetAnimation(sitting_animation);
-			skeletal_mesh->PlayAnimation(sitting_animation, true);
+			//skeletal_mesh->SetAnimation(sitting_animation);
+			//skeletal_mesh->PlayAnimation(sitting_animation, true);
 		}
 
 		else
 		{
 			original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
 			original_camera_height = original_standing_camera_height;
-			skeletal_mesh->SetAnimation(standing_animation);
-			skeletal_mesh->PlayAnimation(standing_animation, true);
+			//skeletal_mesh->SetAnimation(standing_animation);
+			//skeletal_mesh->PlayAnimation(standing_animation, true);
 		}
 
 		map_time += DeltaTime;
@@ -473,16 +474,16 @@ void AVRPawn::toggle_seating()
 	{
 		original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
 		original_camera_height = original_sitting_camera_height;
-		skeletal_mesh->SetAnimation(sitting_animation);
-		skeletal_mesh->PlayAnimation(sitting_animation, true);
+		//skeletal_mesh->SetAnimation(sitting_animation);
+		//skeletal_mesh->PlayAnimation(sitting_animation, true);
 	}
 
 	else
 	{
 		original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
 		original_camera_height = original_standing_camera_height;
-		skeletal_mesh->SetAnimation(standing_animation);
-		skeletal_mesh->PlayAnimation(standing_animation, true);
+		//skeletal_mesh->SetAnimation(standing_animation);
+		//skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
 }
 
