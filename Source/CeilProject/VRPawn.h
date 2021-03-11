@@ -133,8 +133,8 @@ class CEILPROJECT_API AVRPawn : public APawn
 		FTransform last_camera_position;
 		FTransform body_target_position;
 		FTransform body_current_position;
-		float movement_thresh = 10.0f;
-		float rotation_thresh = 10.0f;
+		float movement_thresh = 15.0f;
+		float rotation_thresh = 15.0f;
 		float movement_direction;
 		float movement_speed;
 		float alpha;

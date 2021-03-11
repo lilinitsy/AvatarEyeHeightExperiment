@@ -116,7 +116,7 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	/*compute_headset_motion_information();
+	compute_headset_motion_information();
 
 	check_audio_finished(34.0f, instruction_audio_time, instruction_audio_finished);
 	check_audio_finished(11.0f, stand_calib_1_time, stand_calib_1_finished);
@@ -125,16 +125,12 @@ void AVRPawn::Tick(float DeltaTime)
 	/*if (standing_calibrated && sitting_calibrated && commence_standing_trials_2_started && commence_standing_trials_2_started)
 	{
 		UGameplayStatics::PlaySound2D(this, calibration_completed, 5.0f);
-	}
+
+	}*/
 
 	if (calibration_started)
 	{
 		// TODO: Don't write out intermediate values to data file
-
-
-
-
-
 
 		// Write out the standing height values
 		if (tick_counter == 500 && calibrating_standing)
@@ -254,9 +250,9 @@ void AVRPawn::Tick(float DeltaTime)
 	if (commence_standing_trials_2_started)
 	{
 		calculate_movement();
-	}*/
+	}
 
-	calculate_movement();
+	//calculate_movement();
 }
 
 // Called to bind functionality to input
@@ -614,8 +610,8 @@ float AVRPawn::distance_rotated(FRotator current_rotation)
 TTuple<FVector, FRotator> AVRPawn::body_offset()
 {
 	FTransform camera_transform = camera->GetRelativeTransform();
-	float camera_transform_z	= camera_transform.Rotator().Yaw;
-	FRotator rotatorwtf			= FRotator(0.0f, camera_transform_z, 0.0f); // what the fuck is this?
+	float camera_transform_pitch	= camera_transform.Rotator().Pitch;
+	FRotator rotatorwtf			= FRotator(0.0f, camera_transform_pitch, 0.0f); // what the fuck is this?
 
 	FVector rotatorwtf_rightvec = UKismetMathLibrary::GetRightVector(rotatorwtf);
 	rotatorwtf_rightvec			= UKismetMathLibrary::Multiply_VectorInt(rotatorwtf_rightvec, -20); // where tf does -20 come from?
@@ -659,12 +655,12 @@ float AVRPawn::get_movement_direction()
 	float forwards_cross_positions_result;
 	if (forwards_cross_positions.Z > 0)
 	{
-		forwards_cross_positions_result = -1.0f;
+		forwards_cross_positions_result = 1.0f;
 	}
 
 	else
 	{
-		forwards_cross_positions_result = 1.0f;
+		forwards_cross_positions_result = -1.0f;
 	}
 
 	float dir = forwards_dot_positions * forwards_cross_positions_result;
@@ -702,7 +698,7 @@ void AVRPawn::calculate_movement()
 		// movement speed
 		movement_speed = (dist_moved + dist_rotated) / 2000.0f / GetWorld()->GetDeltaSeconds();
 
-		UE_LOG(LogTemp, Log, TEXT("(moved, rot): %f %f"), dist_moved, dist_rotated);
+		//UE_LOG(LogTemp, Log, TEXT("(moved, rot): %f %f"), dist_moved, dist_rotated);
 	}
 
 	else
@@ -718,18 +714,16 @@ void AVRPawn::calculate_movement()
 		{
 			alpha = UKismetMathLibrary::FInterpTo_Constant(alpha, 1.0f, GetWorld()->GetDeltaSeconds(), movement_speed);
 			body_current_position = UKismetMathLibrary::TLerp(body_current_position, body_target_position, alpha);
-			//body_current_position.SetLocation(FVector(body_current_position.GetLocation().X, body_current_position.GetLocation().Y, skeletal_attachment_point->GetComponentLocation().Z));
 			FVector skeletal_mesh_move_loc = FVector(body_current_position.GetLocation().X, body_current_position.GetLocation().Y, skeletal_attachment_point->GetComponentLocation().Z);
-			//skeletal_mesh->SetWorldLocationAndRotation(skeletal_mesh_move_loc, body_current_position.GetRotation());
 			skeletal_mesh->SetRelativeLocationAndRotation(skeletal_mesh_move_loc, body_current_position.GetRotation());
-			UE_LOG(LogTemp, Log, TEXT("SETTING SKELETAL ATTACHMENT POSITION TO: %f %f %f\n"), skeletal_mesh_move_loc.X, skeletal_mesh_move_loc.Y, skeletal_mesh_move_loc.Z);
-			UE_LOG(LogTemp, Log, TEXT("SKELETAL ATTACHMENT CHECK: %f %f %f\n"), skeletal_attachment_point->GetRelativeLocation().X, skeletal_attachment_point->GetRelativeLocation().Y, skeletal_attachment_point->GetRelativeLocation().Z);
+			//UE_LOG(LogTemp, Log, TEXT("SETTING SKELETAL ATTACHMENT POSITION TO: %f %f %f\n"), skeletal_mesh_move_loc.X, skeletal_mesh_move_loc.Y, skeletal_mesh_move_loc.Z);
+			//UE_LOG(LogTemp, Log, TEXT("SKELETAL ATTACHMENT CHECK: %f %f %f\n"), skeletal_attachment_point->GetRelativeLocation().X, skeletal_attachment_point->GetRelativeLocation().Y, skeletal_attachment_point->GetRelativeLocation().Z);
 		}
 
 
-		UE_LOG(LogTemp, Log, TEXT("Camera position: %f %f %f\n"), camera->GetRelativeLocation().X, camera->GetRelativeLocation().Y, camera->GetRelativeLocation().Z);
-		UE_LOG(LogTemp, Log, TEXT("Body current position: %f, %f, %f\n"), body_current_position.GetLocation().X, body_current_position.GetLocation().Y, body_current_position.GetLocation().Z);
-		UE_LOG(LogTemp, Log, TEXT("skeletal mesh position: %f %f %f\n"), skeletal_mesh->GetRelativeLocation().X, skeletal_mesh->GetRelativeLocation().Y, skeletal_mesh->GetRelativeLocation().Z);
+		//UE_LOG(LogTemp, Log, TEXT("Camera position: %f %f %f\n"), camera->GetRelativeLocation().X, camera->GetRelativeLocation().Y, camera->GetRelativeLocation().Z);
+		//UE_LOG(LogTemp, Log, TEXT("Body current position: %f, %f, %f\n"), body_current_position.GetLocation().X, body_current_position.GetLocation().Y, body_current_position.GetLocation().Z);
+		//UE_LOG(LogTemp, Log, TEXT("skeletal mesh position: %f %f %f\n"), skeletal_mesh->GetRelativeLocation().X, skeletal_mesh->GetRelativeLocation().Y, skeletal_mesh->GetRelativeLocation().Z);
 	}
 
 }
