@@ -127,6 +127,26 @@ class CEILPROJECT_API AVRPawn : public APawn
 		void scale_model_offset(float offset);
 		void scale_model_adjustment(float amount);
 
+
+
+		// Stuff related to IK here
+		FTransform last_camera_position;
+		FTransform body_target_position;
+		FTransform body_current_position;
+		float movement_thresh = 10.0f;
+		float rotation_thresh = 10.0f;
+		float movement_direction;
+		float movement_speed;
+		float alpha;
+
+		float distance_moved(float x, float y);
+		float distance_rotated(FRotator current_rotation);
+		TTuple<FVector, FRotator> body_offset();
+		float get_movement_direction();
+		void calculate_movement();
+		void reset_ik_parameters();
+
+
 	private:
 		// Greater map_list to save which maps are used, and then maps will be the random maps that are used for each set of n trials.
 		TArray<MapData> map_list;

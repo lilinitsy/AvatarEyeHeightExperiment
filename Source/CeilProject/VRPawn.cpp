@@ -16,6 +16,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Misc/App.h"
 #include "XRMotionControllerBase.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AVRPawn::AVRPawn()
@@ -102,6 +103,8 @@ void AVRPawn::BeginPlay()
 	Super::BeginPlay();
 
 	original_camera_location = camera_attachment_point->GetRelativeTransform().GetLocation();
+	body_current_position.SetLocation(skeletal_mesh->GetRelativeLocation());
+	body_current_position.SetRotation(FQuat(skeletal_mesh->GetRelativeRotation()));
 
 	// Specific for Oculus devices
 	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
@@ -113,7 +116,7 @@ void AVRPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	compute_headset_motion_information();
+	/*compute_headset_motion_information();
 
 	check_audio_finished(34.0f, instruction_audio_time, instruction_audio_finished);
 	check_audio_finished(11.0f, stand_calib_1_time, stand_calib_1_finished);
@@ -122,7 +125,7 @@ void AVRPawn::Tick(float DeltaTime)
 	/*if (standing_calibrated && sitting_calibrated && commence_standing_trials_2_started && commence_standing_trials_2_started)
 	{
 		UGameplayStatics::PlaySound2D(this, calibration_completed, 5.0f);
-	}*/
+	}
 
 	if (calibration_started)
 	{
@@ -250,8 +253,10 @@ void AVRPawn::Tick(float DeltaTime)
 
 	if (commence_standing_trials_2_started)
 	{
-		compute_headset_motion_information();
-	}
+		calculate_movement();
+	}*/
+
+	calculate_movement();
 }
 
 // Called to bind functionality to input
@@ -370,6 +375,8 @@ void AVRPawn::cycle_offset()
 		map_time = 0.0f;
 		total_guessed_offset = 0.0f;
 		trial_num++;
+
+		reset_ik_parameters();
 	}
 
 	else
@@ -588,3 +595,159 @@ void AVRPawn::check_audio_finished(float end_time, float &audio_time, bool &soun
 	}
 }
 
+
+
+float AVRPawn::distance_moved(float x, float y)
+{
+	FVector2D input_xy = FVector2D(x, y);
+	FVector2D camera_xy = FVector2D(last_camera_position.GetLocation().X, last_camera_position.GetLocation().Y);
+	float distance = FVector2D::Distance(input_xy, camera_xy);
+	return distance;
+}
+
+float AVRPawn::distance_rotated(FRotator current_rotation)
+{
+	float distance = FGenericPlatformMath::Abs(current_rotation.Yaw - last_camera_position.GetRotation().Rotator().Yaw);
+	return distance;
+}
+
+TTuple<FVector, FRotator> AVRPawn::body_offset()
+{
+	FTransform camera_transform = camera->GetRelativeTransform();
+	float camera_transform_z	= camera_transform.Rotator().Yaw;
+	FRotator rotatorwtf			= FRotator(0.0f, camera_transform_z, 0.0f); // what the fuck is this?
+
+	FVector rotatorwtf_rightvec = UKismetMathLibrary::GetRightVector(rotatorwtf);
+	rotatorwtf_rightvec			= UKismetMathLibrary::Multiply_VectorInt(rotatorwtf_rightvec, -20); // where tf does -20 come from?
+
+	FVector worldtrans_plus_rightvecscaled	= camera_transform.GetLocation() + rotatorwtf_rightvec;
+	worldtrans_plus_rightvecscaled.Z	   -= original_avatar_eyeball_height;
+	return TTuple<FVector, FRotator>(worldtrans_plus_rightvecscaled, rotatorwtf);
+}
+
+
+float AVRPawn::get_movement_direction()
+{
+	FRotator camera_pos_rotation = camera->GetRelativeRotation();
+	FVector current_camera_forward = UKismetMathLibrary::GetForwardVector(camera_pos_rotation);
+	current_camera_forward.Z = 0.0f;
+	current_camera_forward.Normalize(0.0001);
+
+	FVector current_camera_pos = camera->GetRelativeLocation();
+	current_camera_pos.Z = 0.0f;
+	current_camera_pos.Normalize(0.0001);
+
+	FRotator last_camera_pos_rotation = last_camera_position.GetRotation().Rotator();
+	FVector last_camera_forward = UKismetMathLibrary::GetForwardVector(last_camera_pos_rotation);
+	last_camera_forward.Z = 0.0f;
+	last_camera_forward.Normalize(0.0001);
+
+	FVector last_camera_p = last_camera_position.GetLocation();
+	last_camera_p.Z = 0.0f;
+	last_camera_p.Normalize(0.0001);
+
+	FVector forwards_added = current_camera_forward + last_camera_forward;
+	forwards_added = UKismetMathLibrary::Multiply_VectorFloat(forwards_added, 0.5f);
+
+	FVector positions_subtracted = last_camera_p - current_camera_pos;
+
+	float forwards_dot_positions = FVector::DotProduct(forwards_added, positions_subtracted);
+	forwards_dot_positions = UKismetMathLibrary::DegAcos(forwards_dot_positions);
+
+	FVector forwards_cross_positions = FVector::CrossProduct(forwards_added, positions_subtracted);
+
+	float forwards_cross_positions_result;
+	if (forwards_cross_positions.Z > 0)
+	{
+		forwards_cross_positions_result = -1.0f;
+	}
+
+	else
+	{
+		forwards_cross_positions_result = 1.0f;
+	}
+
+	float dir = forwards_dot_positions * forwards_cross_positions_result;
+	return dir;
+}
+
+
+void AVRPawn::calculate_movement()
+{
+	FTransform current_camera_position; // Yes, call it position while it'a a transform, fucking brilliant.
+	float dist_moved;
+	float dist_rotated;
+
+	FVector camera_pos = camera->GetRelativeLocation();
+	float camera_yaw = camera->GetRelativeRotation().Yaw;
+	current_camera_position.SetLocation(FVector(camera_pos.X, camera_pos.Y, 0.0f));
+	current_camera_position.SetRotation(FQuat(FRotator(0.0f, 0.0f, camera_yaw)));
+
+	dist_moved = distance_moved(current_camera_position.GetLocation().X, current_camera_position.GetLocation().Y);
+	dist_rotated = distance_rotated(current_camera_position.GetRotation().Rotator());
+
+	// branch condition
+
+	if (dist_moved > movement_thresh || dist_rotated > rotation_thresh)
+	{
+		// body offset
+		TTuple<FVector, FRotator> b_offset = body_offset();
+		body_target_position.SetLocation(b_offset.Get<0>());
+		body_target_position.SetRotation(FQuat(b_offset.Get<1>()));
+
+		// movement direciton
+		movement_direction = get_movement_direction();
+		last_camera_position = current_camera_position;
+
+		// movement speed
+		movement_speed = (dist_moved + dist_rotated) / 2000.0f / GetWorld()->GetDeltaSeconds();
+
+		UE_LOG(LogTemp, Log, TEXT("(moved, rot): %f %f"), dist_moved, dist_rotated);
+	}
+
+	else
+	{
+		if (body_current_position.Equals(body_target_position))
+		{
+			movement_speed = 0.0f;
+			movement_direction = 0.0f;
+			alpha = 0.0f;
+		}
+
+		else
+		{
+			alpha = UKismetMathLibrary::FInterpTo_Constant(alpha, 1.0f, GetWorld()->GetDeltaSeconds(), movement_speed);
+			body_current_position = UKismetMathLibrary::TLerp(body_current_position, body_target_position, alpha);
+			//body_current_position.SetLocation(FVector(body_current_position.GetLocation().X, body_current_position.GetLocation().Y, skeletal_attachment_point->GetComponentLocation().Z));
+			FVector skeletal_mesh_move_loc = FVector(body_current_position.GetLocation().X, body_current_position.GetLocation().Y, skeletal_attachment_point->GetComponentLocation().Z);
+			//skeletal_mesh->SetWorldLocationAndRotation(skeletal_mesh_move_loc, body_current_position.GetRotation());
+			skeletal_mesh->SetRelativeLocationAndRotation(skeletal_mesh_move_loc, body_current_position.GetRotation());
+			UE_LOG(LogTemp, Log, TEXT("SETTING SKELETAL ATTACHMENT POSITION TO: %f %f %f\n"), skeletal_mesh_move_loc.X, skeletal_mesh_move_loc.Y, skeletal_mesh_move_loc.Z);
+			UE_LOG(LogTemp, Log, TEXT("SKELETAL ATTACHMENT CHECK: %f %f %f\n"), skeletal_attachment_point->GetRelativeLocation().X, skeletal_attachment_point->GetRelativeLocation().Y, skeletal_attachment_point->GetRelativeLocation().Z);
+		}
+
+
+		UE_LOG(LogTemp, Log, TEXT("Camera position: %f %f %f\n"), camera->GetRelativeLocation().X, camera->GetRelativeLocation().Y, camera->GetRelativeLocation().Z);
+		UE_LOG(LogTemp, Log, TEXT("Body current position: %f, %f, %f\n"), body_current_position.GetLocation().X, body_current_position.GetLocation().Y, body_current_position.GetLocation().Z);
+		UE_LOG(LogTemp, Log, TEXT("skeletal mesh position: %f %f %f\n"), skeletal_mesh->GetRelativeLocation().X, skeletal_mesh->GetRelativeLocation().Y, skeletal_mesh->GetRelativeLocation().Z);
+	}
+
+}
+
+
+void AVRPawn::reset_ik_parameters()
+{
+
+
+	last_camera_position.SetLocation(camera->GetRelativeLocation());
+	body_target_position.SetLocation(camera->GetRelativeLocation());
+	body_current_position.SetLocation(camera->GetRelativeLocation());
+
+	last_camera_position.SetRotation(FQuat(camera->GetRelativeRotation()));
+	body_target_position.SetRotation(FQuat(camera->GetRelativeRotation()));
+	body_current_position.SetRotation(FQuat(camera->GetRelativeRotation()));
+
+	movement_direction = 0.0f;
+	movement_speed = 0.0f;
+	alpha = 0.0f;
+}
