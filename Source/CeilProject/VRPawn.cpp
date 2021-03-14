@@ -34,7 +34,7 @@ AVRPawn::AVRPawn()
 	skeletal_mesh->SetupAttachment(skeletal_attachment_point);
 	skeletal_mesh->bEditableWhenInherited = true;
 	skeletal_mesh->SetMobility(EComponentMobility::Movable);
-	skeletal_mesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	//skeletal_mesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 
 	// camera setup
 	camera_attachment_point = CreateDefaultSubobject<USceneComponent>(TEXT("camera_attachment_point"));
@@ -294,6 +294,8 @@ void AVRPawn::cycle_offset()
 {
 	if (camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
 	{
+		//reset_ik_parameters();
+
 		// Record the everything for this trial and write to file
 		FString map_time_string = FString::SanitizeFloat(map_time);
 		FString guess_height_string = FString::SanitizeFloat(total_guessed_offset + camera->GetRelativeTransform().GetLocation().Z) + "\t";
@@ -349,6 +351,20 @@ void AVRPawn::cycle_offset()
 			current_map.spawn_points[0].Y - skeletal_attachment_eye_difference.Y * camera_forward.Y,
 			current_map.spawn_points[0].Z));
 
+
+		// Reset the IK params
+		last_camera_position.SetLocation(camera->GetRelativeLocation());
+		body_target_position.SetLocation(camera->GetRelativeLocation());
+		body_current_position.SetLocation(camera->GetRelativeLocation());
+
+		last_camera_position.SetRotation(FQuat(camera->GetRelativeRotation()));
+		body_target_position.SetRotation(FQuat(camera->GetRelativeRotation()));
+		body_current_position.SetRotation(FQuat(camera->GetRelativeRotation()));
+
+		movement_direction = 0.0f;
+		movement_speed = 0.0f;
+		alpha = 0.0f;
+
 		// Unload all levels except the current map
 		for (int i = 0; i < map_list.Num(); i++)
 		{
@@ -371,8 +387,6 @@ void AVRPawn::cycle_offset()
 		map_time = 0.0f;
 		total_guessed_offset = 0.0f;
 		trial_num++;
-
-		reset_ik_parameters();
 	}
 
 	else
@@ -629,7 +643,7 @@ float AVRPawn::get_movement_direction()
 	current_camera_forward.Z = 0.0f;
 	current_camera_forward.Normalize(0.0001);
 
-	FVector current_camera_pos = camera->GetRelativeLocation();
+	FVector current_camera_pos = camera->GetComponentLocation();
 	current_camera_pos.Z = 0.0f;
 	current_camera_pos.Normalize(0.0001);
 
@@ -674,7 +688,7 @@ void AVRPawn::calculate_movement()
 	float dist_moved;
 	float dist_rotated;
 
-	FVector camera_pos = camera->GetRelativeLocation();
+	FVector camera_pos = camera->GetComponentLocation();
 	float camera_yaw = camera->GetRelativeRotation().Yaw;
 	current_camera_position.SetLocation(FVector(camera_pos.X, camera_pos.Y, 0.0f));
 	current_camera_position.SetRotation(FQuat(FRotator(0.0f, 0.0f, camera_yaw)));
@@ -713,7 +727,9 @@ void AVRPawn::calculate_movement()
 		else
 		{
 			alpha = UKismetMathLibrary::FInterpTo_Constant(alpha, 1.0f, GetWorld()->GetDeltaSeconds(), movement_speed);
-			body_current_position = UKismetMathLibrary::TLerp(body_current_position, body_target_position, alpha);
+			//body_current_position = UKismetMathLibrary::TLerp(body_current_position, body_target_position, alpha); Test line below this
+			body_current_position = body_target_position;
+
 			FVector skeletal_mesh_move_loc = FVector(body_current_position.GetLocation().X, body_current_position.GetLocation().Y, skeletal_attachment_point->GetComponentLocation().Z);
 			skeletal_mesh->SetRelativeLocationAndRotation(skeletal_mesh_move_loc, body_current_position.GetRotation());
 			//UE_LOG(LogTemp, Log, TEXT("SETTING SKELETAL ATTACHMENT POSITION TO: %f %f %f\n"), skeletal_mesh_move_loc.X, skeletal_mesh_move_loc.Y, skeletal_mesh_move_loc.Z);
