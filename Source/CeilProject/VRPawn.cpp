@@ -623,7 +623,7 @@ float AVRPawn::distance_rotated(FRotator current_rotation)
 
 TTuple<FVector, FRotator> AVRPawn::body_offset()
 {
-	FTransform camera_transform = camera->GetRelativeTransform();
+	FTransform camera_transform = camera->GetComponentTransform();
 	float camera_transform_pitch	= camera_transform.Rotator().Pitch;
 	FRotator rotatorwtf			= FRotator(0.0f, camera_transform_pitch, 0.0f); // what the fuck is this?
 
@@ -643,7 +643,7 @@ float AVRPawn::get_movement_direction()
 	current_camera_forward.Z = 0.0f;
 	current_camera_forward.Normalize(0.0001);
 
-	FVector current_camera_pos = camera->GetComponentLocation();
+	FVector current_camera_pos = camera->GetRelativeLocation();
 	current_camera_pos.Z = 0.0f;
 	current_camera_pos.Normalize(0.0001);
 
@@ -731,15 +731,16 @@ void AVRPawn::calculate_movement()
 			body_current_position = body_target_position;
 
 			FVector skeletal_mesh_move_loc = FVector(body_current_position.GetLocation().X, body_current_position.GetLocation().Y, skeletal_attachment_point->GetComponentLocation().Z);
-			skeletal_mesh->SetRelativeLocationAndRotation(skeletal_mesh_move_loc, body_current_position.GetRotation());
+			//skeletal_mesh->SetRelativeLocationAndRotation(skeletal_mesh_move_loc, body_current_position.GetRotation());
+			skeletal_mesh->SetWorldLocationAndRotation(skeletal_mesh_move_loc, body_current_position.GetRotation());
 			//UE_LOG(LogTemp, Log, TEXT("SETTING SKELETAL ATTACHMENT POSITION TO: %f %f %f\n"), skeletal_mesh_move_loc.X, skeletal_mesh_move_loc.Y, skeletal_mesh_move_loc.Z);
 			//UE_LOG(LogTemp, Log, TEXT("SKELETAL ATTACHMENT CHECK: %f %f %f\n"), skeletal_attachment_point->GetRelativeLocation().X, skeletal_attachment_point->GetRelativeLocation().Y, skeletal_attachment_point->GetRelativeLocation().Z);
 		}
 
-
-		//UE_LOG(LogTemp, Log, TEXT("Camera position: %f %f %f\n"), camera->GetRelativeLocation().X, camera->GetRelativeLocation().Y, camera->GetRelativeLocation().Z);
-		//UE_LOG(LogTemp, Log, TEXT("Body current position: %f, %f, %f\n"), body_current_position.GetLocation().X, body_current_position.GetLocation().Y, body_current_position.GetLocation().Z);
-		//UE_LOG(LogTemp, Log, TEXT("skeletal mesh position: %f %f %f\n"), skeletal_mesh->GetRelativeLocation().X, skeletal_mesh->GetRelativeLocation().Y, skeletal_mesh->GetRelativeLocation().Z);
+		UE_LOG(LogTemp, Log, TEXT("Current map: %s\n"), *current_map.name.ToString());
+		UE_LOG(LogTemp, Log, TEXT("Camera position: %f %f %f\n"), camera->GetComponentLocation().X, camera->GetComponentLocation().Y, camera->GetComponentLocation().Z);
+		UE_LOG(LogTemp, Log, TEXT("Body current position: %f, %f, %f\n"), body_current_position.GetLocation().X, body_current_position.GetLocation().Y, body_current_position.GetLocation().Z);
+		UE_LOG(LogTemp, Log, TEXT("skeletal mesh position: %f %f %f\n\n"), skeletal_mesh->GetComponentLocation().X, skeletal_mesh->GetComponentLocation().Y, skeletal_mesh->GetComponentLocation().Z);
 	}
 
 }
