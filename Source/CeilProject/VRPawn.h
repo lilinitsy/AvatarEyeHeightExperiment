@@ -209,6 +209,17 @@ class CEILPROJECT_API AVRPawn : public APawn
 		float sit_calib_1_time = 0.0f;
 		float commence_standing_trials_2_time = 0.0f;
 
+
+		// Instruction map hacks
+		bool instruction_map_1 = true;
+		bool instruction_map_2 = false;
+		bool instruction_map_3 = false;
+		MapData instructionlvl1;
+		MapData instructionlvl2;
+		MapData instructionlvl3;
+
+
+
 		// Figure out headset motion vectors
 		void write_headset_motion_data_to_file(FString rot_data, FString pos_data);
 		void compute_headset_motion_information();

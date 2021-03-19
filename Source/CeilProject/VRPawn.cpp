@@ -108,6 +108,14 @@ void AVRPawn::BeginPlay()
 
 	// Specific for Oculus devices
 	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
+
+	// Start in instruction map 1
+	FLatentActionInfo latent_action_info;
+	latent_action_info.CallbackTarget = this;
+	latent_action_info.UUID = i;
+	latent_action_info.Linkage = 0;
+
+	UGameplayStatics::LoadStreamLevel(this, instructionlvl1.name, true, true, latent_action_info);
 }
 
 
@@ -128,7 +136,14 @@ void AVRPawn::Tick(float DeltaTime)
 
 	}*/
 
-	if (calibration_started)
+
+	if (instructions_map_1)
+	{
+
+	}
+
+
+	else if (calibration_started)
 	{
 		// TODO: Don't write out intermediate values to data file
 
@@ -458,6 +473,7 @@ void AVRPawn::compute_headset_motion_information()
 }
 
 
+// Caused by pressing A
 void AVRPawn::swap_calibration()
 {
 	calibrating_standing = !calibrating_standing;
@@ -483,6 +499,7 @@ void AVRPawn::set_thumbstick_y(float y)
 }
 
 
+// Caused by pressing B; might remove
 void AVRPawn::toggle_seating()
 {
 	seated = !seated;
@@ -592,6 +609,23 @@ void AVRPawn::initialize_map_data()
 	map_list.Add(zen_walkway_wood);
 	map_list.Add(zen_walkway_stone);
 	map_list.Add(elven_ruins);
+
+
+	instructionlvl1.name = "instructionlvl1";
+	instructionlvl1.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	instructionlvl1.floor_height = 0.0f;
+	instructionlvl1.spawn_points.Add(FVector(0.0f, 0.0f, 0.0f));
+
+	instructionlvl2.name = "instructionlvl2";
+	instructionlvl2.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	instructionlvl2.floor_height = 0.0f;
+	instructionlvl2.spawn_points.Add(FVector(0.0f, 0.0f, 0.0f));
+
+	instructionlvl3.name = "instructionlvl3";
+	instructionlvl3.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	instructionlvl3.floor_height = 0.0f;
+	instructionlvl3.spawn_points.Add(FVector(0.0f, 0.0f, 0.0f));
+
 }
 
 
