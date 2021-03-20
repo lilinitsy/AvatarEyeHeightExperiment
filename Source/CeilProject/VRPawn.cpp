@@ -112,10 +112,17 @@ void AVRPawn::BeginPlay()
 	// Start in instruction map 1
 	FLatentActionInfo latent_action_info;
 	latent_action_info.CallbackTarget = this;
-	latent_action_info.UUID = i;
+	latent_action_info.UUID = 0;
 	latent_action_info.Linkage = 0;
 
 	UGameplayStatics::LoadStreamLevel(this, instructionlvl1.name, true, true, latent_action_info);
+	current_map = instructionlvl1;
+
+	FVector origin_camera_difference = vr_origin->GetComponentLocation() - camera->GetComponentLocation();
+	vr_origin->SetWorldLocation(FVector(
+		current_map.spawn_points[0].X + origin_camera_difference.X,
+		current_map.spawn_points[0].Y + origin_camera_difference.Y,
+		current_map.spawn_points[0].Z));
 }
 
 
@@ -137,13 +144,7 @@ void AVRPawn::Tick(float DeltaTime)
 	}*/
 
 
-	if (instructions_map_1)
-	{
-
-	}
-
-
-	else if (calibration_started)
+	if (calibration_started)
 	{
 		// TODO: Don't write out intermediate values to data file
 
@@ -161,6 +162,16 @@ void AVRPawn::Tick(float DeltaTime)
 			write_data_to_file(data);
 			calibration_started = false;
 			standing_calibrated = true;
+
+			FLatentActionInfo latent_action_info;
+			latent_action_info.CallbackTarget = this;
+			latent_action_info.UUID = 0;
+			latent_action_info.Linkage = 0;
+
+			UGameplayStatics::LoadStreamLevel(this, instructionlvl2.name, true, true, latent_action_info);
+			current_map = instructionlvl2;
+
+
 			tick_counter++;
 		}
 
@@ -177,6 +188,15 @@ void AVRPawn::Tick(float DeltaTime)
 			write_data_to_file(data);
 			calibration_started = false;
 			sitting_calibrated = true;
+
+			FLatentActionInfo latent_action_info;
+			latent_action_info.CallbackTarget = this;
+			latent_action_info.UUID = 0;
+			latent_action_info.Linkage = 0;
+
+			UGameplayStatics::LoadStreamLevel(this, instructionlvl3.name, true, true, latent_action_info);
+			current_map = instructionlvl3;
+
 			tick_counter++;
 		}
 
@@ -230,6 +250,7 @@ void AVRPawn::Tick(float DeltaTime)
 		map_time += DeltaTime;
 	}
 
+	/*
 	else if (!calibration_started && !instruction_audio_started)
 	{
 		UGameplayStatics::PlaySound2D(this, instruction_audio, 5.0f);
@@ -260,7 +281,7 @@ void AVRPawn::Tick(float DeltaTime)
 	{
 		UGameplayStatics::PlaySound2D(this, commence_sitting_trials_2, 5.0f);
 		commence_sitting_trials_2_started = true;
-	}
+	} */
 
 	if (commence_standing_trials_2_started)
 	{
@@ -307,6 +328,8 @@ void AVRPawn::scale_model_adjustment(float amount)
 
 void AVRPawn::cycle_offset()
 {
+	commence_standing_trials_2_started++;
+
 	if (camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
 	{
 		//reset_ik_parameters();
@@ -481,6 +504,44 @@ void AVRPawn::swap_calibration()
 	calibration_started = true;
 	sum_height = 0.0f;
 	tick_counter = 0;
+
+	if (instruction_map_1)
+	{
+		instruction_map_1 = false;
+		instruction_map_2 = true;
+
+		FLatentActionInfo latent_action_info;
+		latent_action_info.CallbackTarget = this;
+		latent_action_info.UUID = 0;
+		latent_action_info.Linkage = 0;
+
+		UGameplayStatics::UnloadStreamLevel(this, instructionlvl1.name, latent_action_info, true);
+	}
+
+	else if (instruction_map_2)
+	{
+		instruction_map_2 = false;
+		instruction_map_3 = true;
+
+		FLatentActionInfo latent_action_info;
+		latent_action_info.CallbackTarget = this;
+		latent_action_info.UUID = 0;
+		latent_action_info.Linkage = 0;
+
+		UGameplayStatics::UnloadStreamLevel(this, instructionlvl2.name, latent_action_info, true);
+	}
+
+	else if (instruction_map_3)
+	{
+		instruction_map_3 = false;
+
+		FLatentActionInfo latent_action_info;
+		latent_action_info.CallbackTarget = this;
+		latent_action_info.UUID = 0;
+		latent_action_info.Linkage = 0;
+
+		UGameplayStatics::UnloadStreamLevel(this, instructionlvl3.name, latent_action_info, true);
+	}
 }
 
 void AVRPawn::set_thumbstick_y(float y)
