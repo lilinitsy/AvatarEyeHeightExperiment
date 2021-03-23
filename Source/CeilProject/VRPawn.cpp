@@ -123,6 +123,9 @@ void AVRPawn::BeginPlay()
 		current_map.spawn_points[0].X + origin_camera_difference.X,
 		current_map.spawn_points[0].Y + origin_camera_difference.Y,
 		current_map.spawn_points[0].Z));
+
+	skeletal_mesh->SetActive(false);
+
 }
 
 
@@ -286,6 +289,7 @@ void AVRPawn::Tick(float DeltaTime)
 	if (commence_standing_trials_2_started)
 	{
 		calculate_movement();
+		skeletal_mesh->SetActive(true);
 	}
 
 	//calculate_movement();
@@ -719,11 +723,12 @@ float AVRPawn::distance_rotated(FRotator current_rotation)
 TTuple<FVector, FRotator> AVRPawn::body_offset()
 {
 	FTransform camera_transform = camera->GetComponentTransform();
-	float camera_transform_pitch	= camera_transform.Rotator().Pitch;
+	float camera_transform_pitch	= camera_transform.Rotator().Yaw;
+	camera_transform_pitch -= 90.0f;
 	FRotator rotatorwtf			= FRotator(0.0f, camera_transform_pitch, 0.0f); // what the fuck is this?
 
 	FVector rotatorwtf_rightvec = UKismetMathLibrary::GetRightVector(rotatorwtf);
-	rotatorwtf_rightvec			= UKismetMathLibrary::Multiply_VectorInt(rotatorwtf_rightvec, -20); // where tf does -20 come from?
+	rotatorwtf_rightvec			= UKismetMathLibrary::Multiply_VectorInt(rotatorwtf_rightvec, -10); // where tf does -20 come from?
 
 	FVector worldtrans_plus_rightvecscaled	= camera_transform.GetLocation() + rotatorwtf_rightvec;
 	worldtrans_plus_rightvecscaled.Z	   -= original_avatar_eyeball_height;
@@ -822,8 +827,8 @@ void AVRPawn::calculate_movement()
 		else
 		{
 			alpha = UKismetMathLibrary::FInterpTo_Constant(alpha, 1.0f, GetWorld()->GetDeltaSeconds(), movement_speed);
-			//body_current_position = UKismetMathLibrary::TLerp(body_current_position, body_target_position, alpha); Test line below this
-			body_current_position = body_target_position;
+			body_current_position = UKismetMathLibrary::TLerp(body_current_position, body_target_position, alpha); // Test line below this
+			//body_current_position = body_target_position;
 
 			FVector skeletal_mesh_move_loc = FVector(body_current_position.GetLocation().X, body_current_position.GetLocation().Y, skeletal_attachment_point->GetComponentLocation().Z);
 			//skeletal_mesh->SetRelativeLocationAndRotation(skeletal_mesh_move_loc, body_current_position.GetRotation());
@@ -837,6 +842,7 @@ void AVRPawn::calculate_movement()
 		UE_LOG(LogTemp, Log, TEXT("Body current position: %f, %f, %f\n"), body_current_position.GetLocation().X, body_current_position.GetLocation().Y, body_current_position.GetLocation().Z);
 		UE_LOG(LogTemp, Log, TEXT("skeletal mesh position: %f %f %f\n\n"), skeletal_mesh->GetComponentLocation().X, skeletal_mesh->GetComponentLocation().Y, skeletal_mesh->GetComponentLocation().Z);
 	}
+
 
 }
 
