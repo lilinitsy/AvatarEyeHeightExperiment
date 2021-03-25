@@ -50,12 +50,12 @@ class CEILPROJECT_API AVRPawn : public APawn
 		UPROPERTY(VisibleAnywhere, Category = "Motion Controllers")
 		UMotionControllerComponent *right_hand;
 
-		/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 		UAnimationAsset *standing_animation;
 
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
 		UAnimationAsset *sitting_animation;
-		*/
+		
 
 		UPROPERTY(EditAnywhere, Category = "General Parameters")
 		bool seated = false;
@@ -133,8 +133,8 @@ class CEILPROJECT_API AVRPawn : public APawn
 		FTransform last_camera_position;
 		FTransform body_target_position;
 		FTransform body_current_position;
-		float movement_thresh = 15.0f;
-		float rotation_thresh = 15.0f;
+		float movement_thresh = 10.0f;
+		float rotation_thresh = 10.0f;
 		float movement_direction;
 		float movement_speed;
 		float alpha;

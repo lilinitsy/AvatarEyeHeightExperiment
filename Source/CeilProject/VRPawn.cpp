@@ -78,16 +78,16 @@ AVRPawn::AVRPawn()
 	{
 		original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
 		original_camera_height = original_sitting_camera_height;
-		//skeletal_mesh->SetAnimation(sitting_animation);
-		//skeletal_mesh->PlayAnimation(sitting_animation, true);
+		skeletal_mesh->SetAnimation(sitting_animation);
+		skeletal_mesh->PlayAnimation(sitting_animation, true);
 	}
 
 	else
 	{
 		original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
 		original_camera_height = original_standing_camera_height;
-		//skeletal_mesh->SetAnimation(standing_animation);
-		//skeletal_mesh->PlayAnimation(standing_animation, true);
+		skeletal_mesh->SetAnimation(standing_animation);
+		skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
 
 	//standing_trials_currently = FMath::RandRange(0, 1);
@@ -124,7 +124,13 @@ void AVRPawn::BeginPlay()
 		current_map.spawn_points[0].Y + origin_camera_difference.Y,
 		current_map.spawn_points[0].Z));
 
-	skeletal_mesh->SetActive(false);
+	// move skeletal mesh out of view
+	FVector skeletal_mesh_location = skeletal_mesh->GetComponentLocation();
+	skeletal_mesh_location.Y -= 1000.0f;
+	skeletal_mesh_location.Z -= 200.0f;
+
+	skeletal_mesh->SetWorldLocation(skeletal_mesh_location);
+	skeletal_mesh->SetHiddenInGame(true);
 
 }
 
@@ -152,7 +158,7 @@ void AVRPawn::Tick(float DeltaTime)
 		// TODO: Don't write out intermediate values to data file
 
 		// Write out the standing height values
-		if (tick_counter == 500 && calibrating_standing)
+		if (tick_counter == 300 && calibrating_standing)
 		{
 			original_standing_camera_height = sum_height / tick_counter;
 			original_camera_height = original_standing_camera_height;
@@ -179,7 +185,7 @@ void AVRPawn::Tick(float DeltaTime)
 		}
 
 		// Write out the sitting height values
-		else if (tick_counter == 500 && !calibrating_standing)
+		else if (tick_counter == 300 && !calibrating_standing)
 		{
 			original_sitting_camera_height = sum_height / tick_counter;
 			UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
@@ -203,30 +209,30 @@ void AVRPawn::Tick(float DeltaTime)
 			tick_counter++;
 		}
 
-		else if (tick_counter < 500)
+		else if (tick_counter < 300)
 		{
 			if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_standing_height && tick_counter > 0)
 			{
 				min_standing_height = camera->GetRelativeTransform().GetLocation().Z;
-				UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_standing_height);
+				UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 300 MINHEIGHT: %f\n"), tick_counter, min_standing_height);
 			}
 
 			if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_standing_height && tick_counter > 0)
 			{
 				max_standing_height = camera->GetRelativeTransform().GetLocation().Z;
-				UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_standing_height);
+				UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 300 MAXHEIGHT: %f\n"), tick_counter, max_standing_height);
 			}
 
 			if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_sitting_height && tick_counter > 0)
 			{
 				min_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
-				UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MINHEIGHT: %f\n"), tick_counter, min_sitting_height);
+				UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 300 MINHEIGHT: %f\n"), tick_counter, min_sitting_height);
 			}
 
 			if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_sitting_height && tick_counter > 0)
 			{
 				max_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
-				UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 500 MAXHEIGHT: %f\n"), tick_counter, max_sitting_height);
+				UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 300 MAXHEIGHT: %f\n"), tick_counter, max_sitting_height);
 			}
 
 			sum_height += camera->GetRelativeTransform().GetLocation().Z;
@@ -238,16 +244,16 @@ void AVRPawn::Tick(float DeltaTime)
 		{
 			original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
 			original_camera_height = original_sitting_camera_height;
-			//skeletal_mesh->SetAnimation(sitting_animation);
-			//skeletal_mesh->PlayAnimation(sitting_animation, true);
+			skeletal_mesh->SetAnimation(sitting_animation);
+			skeletal_mesh->PlayAnimation(sitting_animation, true);
 		}
 
 		else
 		{
 			original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
 			original_camera_height = original_standing_camera_height;
-			//skeletal_mesh->SetAnimation(standing_animation);
-			//skeletal_mesh->PlayAnimation(standing_animation, true);
+			skeletal_mesh->SetAnimation(standing_animation);
+			skeletal_mesh->PlayAnimation(standing_animation, true);
 		}
 
 		map_time += DeltaTime;
@@ -332,6 +338,22 @@ void AVRPawn::scale_model_adjustment(float amount)
 
 void AVRPawn::cycle_offset()
 {
+	if (instruction_map_3 && trial_num == 0)
+	{
+		instruction_map_3 = false;
+
+		FLatentActionInfo latent_action_info;
+		latent_action_info.CallbackTarget = this;
+		latent_action_info.UUID = 0;
+		latent_action_info.Linkage = 0;
+		
+		UGameplayStatics::UnloadStreamLevel(this, instructionlvl3.name, latent_action_info, true);
+		skeletal_mesh->SetHiddenInGame(false);
+
+		UE_LOG(LogTemp, Log, TEXT("SKELETAL MESH SHOULD BE VISIBLE\n"));
+
+	}
+
 	commence_standing_trials_2_started++;
 
 	if (camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
@@ -511,6 +533,7 @@ void AVRPawn::swap_calibration()
 
 	if (instruction_map_1)
 	{
+		UE_LOG(LogTemp, Log, TEXT("Unloading Instruction Map 1"));
 		instruction_map_1 = false;
 		instruction_map_2 = true;
 
@@ -524,6 +547,7 @@ void AVRPawn::swap_calibration()
 
 	else if (instruction_map_2)
 	{
+		UE_LOG(LogTemp, Log, TEXT("Unloading Instruction Map 2"));
 		instruction_map_2 = false;
 		instruction_map_3 = true;
 
@@ -537,6 +561,7 @@ void AVRPawn::swap_calibration()
 
 	else if (instruction_map_3)
 	{
+		UE_LOG(LogTemp, Log, TEXT("Unloading Instruction Map 3"));
 		instruction_map_3 = false;
 
 		FLatentActionInfo latent_action_info;
@@ -573,16 +598,16 @@ void AVRPawn::toggle_seating()
 	{
 		original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
 		original_camera_height = original_sitting_camera_height;
-		//skeletal_mesh->SetAnimation(sitting_animation);
-		//skeletal_mesh->PlayAnimation(sitting_animation, true);
+		skeletal_mesh->SetAnimation(sitting_animation);
+		skeletal_mesh->PlayAnimation(sitting_animation, true);
 	}
 
 	else
 	{
 		original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
 		original_camera_height = original_standing_camera_height;
-		//skeletal_mesh->SetAnimation(standing_animation);
-		//skeletal_mesh->PlayAnimation(standing_animation, true);
+		skeletal_mesh->SetAnimation(standing_animation);
+		skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
 }
 
@@ -659,7 +684,7 @@ void AVRPawn::initialize_map_data()
 	elven_ruins.name = "ElvenRuins";
 	elven_ruins.rotation = FRotator(0.0f, 0.0f, 0.0f);
 	elven_ruins.floor_height = 0.0f;
-	elven_ruins.spawn_points.Add(FVector(-3400.0f, -120.0f, 8010.0f));
+	elven_ruins.spawn_points.Add(FVector(-1480.0f, 270.0f, 8134.5f));
 
 
 	map_list.Add(office);
@@ -828,19 +853,10 @@ void AVRPawn::calculate_movement()
 		{
 			alpha = UKismetMathLibrary::FInterpTo_Constant(alpha, 1.0f, GetWorld()->GetDeltaSeconds(), movement_speed);
 			body_current_position = UKismetMathLibrary::TLerp(body_current_position, body_target_position, alpha); // Test line below this
-			//body_current_position = body_target_position;
 
 			FVector skeletal_mesh_move_loc = FVector(body_current_position.GetLocation().X, body_current_position.GetLocation().Y, skeletal_attachment_point->GetComponentLocation().Z);
-			//skeletal_mesh->SetRelativeLocationAndRotation(skeletal_mesh_move_loc, body_current_position.GetRotation());
 			skeletal_mesh->SetWorldLocationAndRotation(skeletal_mesh_move_loc, body_current_position.GetRotation());
-			//UE_LOG(LogTemp, Log, TEXT("SETTING SKELETAL ATTACHMENT POSITION TO: %f %f %f\n"), skeletal_mesh_move_loc.X, skeletal_mesh_move_loc.Y, skeletal_mesh_move_loc.Z);
-			//UE_LOG(LogTemp, Log, TEXT("SKELETAL ATTACHMENT CHECK: %f %f %f\n"), skeletal_attachment_point->GetRelativeLocation().X, skeletal_attachment_point->GetRelativeLocation().Y, skeletal_attachment_point->GetRelativeLocation().Z);
 		}
-
-		UE_LOG(LogTemp, Log, TEXT("Current map: %s\n"), *current_map.name.ToString());
-		UE_LOG(LogTemp, Log, TEXT("Camera position: %f %f %f\n"), camera->GetComponentLocation().X, camera->GetComponentLocation().Y, camera->GetComponentLocation().Z);
-		UE_LOG(LogTemp, Log, TEXT("Body current position: %f, %f, %f\n"), body_current_position.GetLocation().X, body_current_position.GetLocation().Y, body_current_position.GetLocation().Z);
-		UE_LOG(LogTemp, Log, TEXT("skeletal mesh position: %f %f %f\n\n"), skeletal_mesh->GetComponentLocation().X, skeletal_mesh->GetComponentLocation().Y, skeletal_mesh->GetComponentLocation().Z);
 	}
 
 
