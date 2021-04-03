@@ -354,7 +354,7 @@ void AVRPawn::cycle_offset()
 
 	}
 
-	commence_standing_trials_2_started++;
+	commence_standing_trials_2_started = true;
 
 	if (camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
 	{
