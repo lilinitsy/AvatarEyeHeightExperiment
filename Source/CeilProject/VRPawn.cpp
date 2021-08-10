@@ -253,6 +253,7 @@ void AVRPawn::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
 	PlayerInputComponent->BindAction("SwapCalibration", IE_Released, this, &AVRPawn::swap_calibration);
 	PlayerInputComponent->BindAction("ToggleSeating", IE_Released, this, &AVRPawn::toggle_seating);
 	PlayerInputComponent->BindAxis("MotionControllerRYAxis", this, &AVRPawn::set_thumbstick_y);
+	PlayerInputComponent->BindAxis("MotionControllerRYAxisNegative", this, &AVRPawn::set_thumbstick_y_negative);
 }
 
 
@@ -374,6 +375,8 @@ void AVRPawn::cycle_offset()
 			}
 		}
 
+		UE_LOG(LogTemp, Log, TEXT("Trial num: %d\n"), trial_num);
+
 		map_time = 0.0f;
 		total_guessed_offset = 0.0f;
 		trial_num++;
@@ -458,6 +461,8 @@ void AVRPawn::swap_calibration()
 	tick_counter = 0;
 }
 
+
+// Something broke, so have to have two versions of this function and two axis mappings :P
 void AVRPawn::set_thumbstick_y(float y)
 {
 	if(FGenericPlatformMath::Abs(y) > 0.1f)
@@ -472,6 +477,23 @@ void AVRPawn::set_thumbstick_y(float y)
 		scale_model_adjustment(camera_movement);
 	}
 }
+
+
+void AVRPawn::set_thumbstick_y_negative(float y)
+{
+	if (FGenericPlatformMath::Abs(y) > 0.1f)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Action mapping for thumbstick NEGATIVE selected"));
+		float dt = GetWorld()->GetDeltaSeconds();
+		float camera_movement = thumbstick_speed_scale * FGenericPlatformMath::Abs(y) * y * dt;
+		total_guessed_offset += camera_movement;
+
+		FVector camera_location = camera_attachment_point->GetComponentLocation();
+		camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, camera_location.Z + camera_movement));
+		scale_model_adjustment(camera_movement);
+	}
+}
+
 
 
 // Caused by pressing B; might remove

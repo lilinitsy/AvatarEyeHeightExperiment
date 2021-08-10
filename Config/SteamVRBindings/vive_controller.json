@@ -17,6 +17,36 @@
 							"output": "/actions/main/in/CycleOffset"
 						}
 					}
+				},
+				{
+					"mode": "dpad",
+					"path": "/user/hand/right/input/trackpad",
+					"parameters":
+					{
+						"sub_mode": "touch"
+					},
+					"inputs":
+					{
+						"north":
+						{
+							"output": "/actions/main/in/MotionControllerRYAxis axis"
+						}
+					}
+				},
+				{
+					"mode": "dpad",
+					"path": "/user/hand/right/input/trackpad",
+					"parameters":
+					{
+						"sub_mode": "touch"
+					},
+					"inputs":
+					{
+						"south":
+						{
+							"output": "/actions/main/in/MotionControllerRYAxisNegative axis"
+						}
+					}
 				}
 			],
 			"poses": [
@@ -52,5 +82,5 @@
 			]
 		}
 	},
-	"description": ""
+	"description": "CeilProject-15228867"
 }

@@ -103,6 +103,7 @@ class CEILPROJECT_API AVRPawn : public APawn
 		void reset_hmd_origin();
 		void toggle_seating();
 		void set_thumbstick_y(float y);
+		void set_thumbstick_y_negative(float y);
 		void cycle_offset();
 		void write_data_to_file(FString data);
 		void scale_model_offset(float offset);
