@@ -92,29 +92,10 @@ class CEILPROJECT_API AVRPawn : public APawn
 		UPROPERTY(EditAnywhere, Category = "Motion Parameters")
 		float thumbstick_speed_scale;
 
+		UPROPERTY(EditAnywhere, Category = "Simulation Parameters")
+		bool part_of_group_a; 
 
-		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundWave *instruction_audio;
-
-		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundWave *stand_calib_1;
-
-		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundWave *sit_calib_1;
-
-		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundWave *commence_standing_trials_2;
-
-		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundWave *commence_sitting_trials_2;
-
-		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundWave *calibration_completed;
-
-		UPROPERTY(EditAnywhere, Category = "Instruction Audio")
-		USoundWave *look_straight_ahead;
-
-		
+	
 
 		AVRPawn();
 		virtual void Tick(float DeltaTime) override;
@@ -150,6 +131,8 @@ class CEILPROJECT_API AVRPawn : public APawn
 	private:
 		// Greater map_list to save which maps are used, and then maps will be the random maps that are used for each set of n trials.
 		TArray<MapData> map_list;
+		TArray<MapData> map_list_a;
+		TArray<MapData> map_list_b;
 		TArray<MapData> maps;
 		MapData current_map;
 		MapData previous_map;
@@ -189,36 +172,8 @@ class CEILPROJECT_API AVRPawn : public APawn
 		bool standing_calibrated = false;
 		bool sitting_calibrated = false;
 
-		bool instruction_audio_started = false;
-		bool instruction_audio_finished = false;
-
-		bool stand_calib_1_started = false;
-		bool stand_calib_1_finished = false;
-
-		bool sit_calib_1_started = false;
-		bool sit_calib_1_finished = false;
-
-		bool commence_standing_trials_2_started = false;
-		bool commence_sitting_trials_2_started = false;
-
 		// true = standing happening, false = sitting happening, randomize this at start for random groups and log it
 		bool standing_trials_currently = true;
-		
-		float instruction_audio_time = 0.0f;
-		float stand_calib_1_time = 0.0f;
-		float sit_calib_1_time = 0.0f;
-		float commence_standing_trials_2_time = 0.0f;
-
-
-		// Instruction map hacks
-		bool instruction_map_1 = true;
-		bool instruction_map_2 = false;
-		bool instruction_map_3 = false;
-		MapData instructionlvl1;
-		MapData instructionlvl2;
-		MapData instructionlvl3;
-
-
 
 		// Figure out headset motion vectors
 		void write_headset_motion_data_to_file(FString rot_data, FString pos_data);

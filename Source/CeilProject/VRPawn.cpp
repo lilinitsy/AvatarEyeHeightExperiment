@@ -93,6 +93,7 @@ AVRPawn::AVRPawn()
 	//standing_trials_currently = FMath::RandRange(0, 1);
 
 	initialize_map_data();
+	map_list = part_of_group_a ? map_list_a : map_list_b;
 	maps = map_list;
 }
 
@@ -109,20 +110,11 @@ void AVRPawn::BeginPlay()
 	// Specific for Oculus devices
 	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
 
-	// Start in instruction map 1
-	FLatentActionInfo latent_action_info;
-	latent_action_info.CallbackTarget = this;
-	latent_action_info.UUID = 0;
-	latent_action_info.Linkage = 0;
-
-	UGameplayStatics::LoadStreamLevel(this, instructionlvl1.name, true, true, latent_action_info);
-	current_map = instructionlvl1;
-
-	FVector origin_camera_difference = vr_origin->GetComponentLocation() - camera->GetComponentLocation();
+	/*FVector origin_camera_difference = vr_origin->GetComponentLocation() - camera->GetComponentLocation();
 	vr_origin->SetWorldLocation(FVector(
 		current_map.spawn_points[0].X + origin_camera_difference.X,
 		current_map.spawn_points[0].Y + origin_camera_difference.Y,
-		current_map.spawn_points[0].Z));
+		current_map.spawn_points[0].Z));*/
 
 	// move skeletal mesh out of view
 	FVector skeletal_mesh_location = skeletal_mesh->GetComponentLocation();
@@ -132,6 +124,8 @@ void AVRPawn::BeginPlay()
 	skeletal_mesh->SetWorldLocation(skeletal_mesh_location);
 	skeletal_mesh->SetHiddenInGame(true);
 
+	FString group_data = "PART OF GROUP A: " + FString::FromInt(part_of_group_a) + "\n";
+	write_data_to_file(group_data);
 }
 
 
@@ -142,15 +136,17 @@ void AVRPawn::Tick(float DeltaTime)
 
 	compute_headset_motion_information();
 
-	check_audio_finished(34.0f, instruction_audio_time, instruction_audio_finished);
-	check_audio_finished(11.0f, stand_calib_1_time, stand_calib_1_finished);
-	check_audio_finished(13.0f, sit_calib_1_time, sit_calib_1_finished);
 
 	/*if (standing_calibrated && sitting_calibrated && commence_standing_trials_2_started && commence_standing_trials_2_started)
 	{
 		UGameplayStatics::PlaySound2D(this, calibration_completed, 5.0f);
 
 	}*/
+
+	if (sitting_calibrated)
+	{
+		skeletal_mesh->SetHiddenInGame(false);
+	}
 
 
 	if (calibration_started)
@@ -165,21 +161,14 @@ void AVRPawn::Tick(float DeltaTime)
 			UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
 			UE_LOG(LogTemp, Log, TEXT("MIN STANDING HEIGHT: %f\n"), min_standing_height);
 			UE_LOG(LogTemp, Log, TEXT("MAX STANDING HEIGHT: %f\n"), max_standing_height);
+			
 			FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_standing_camera_height) + "\n";
 			data += "Min Standing Eye Height: " + FString::SanitizeFloat(min_standing_height) + "\n";
 			data += "Max Standing Eye Height: " + FString::SanitizeFloat(max_standing_height) + "\n";
 			write_data_to_file(data);
+
 			calibration_started = false;
 			standing_calibrated = true;
-
-			FLatentActionInfo latent_action_info;
-			latent_action_info.CallbackTarget = this;
-			latent_action_info.UUID = 0;
-			latent_action_info.Linkage = 0;
-
-			UGameplayStatics::LoadStreamLevel(this, instructionlvl2.name, true, true, latent_action_info);
-			current_map = instructionlvl2;
-
 
 			tick_counter++;
 		}
@@ -191,20 +180,14 @@ void AVRPawn::Tick(float DeltaTime)
 			UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
 			UE_LOG(LogTemp, Log, TEXT("MIN SITTING HEIGHT: %f\n"), min_sitting_height);
 			UE_LOG(LogTemp, Log, TEXT("MAX SITTING HEIGHT: %f\n"), max_sitting_height);
+			
 			FString data = "Sitting Eye Height: " + FString::SanitizeFloat(original_sitting_camera_height) + "\n";
 			data += "Min Sitting Eye Height: " + FString::SanitizeFloat(min_sitting_height) + "\n";
 			data += "Max Sitting Eye Height: " + FString::SanitizeFloat(max_sitting_height) + "\n";
 			write_data_to_file(data);
+			
 			calibration_started = false;
 			sitting_calibrated = true;
-
-			FLatentActionInfo latent_action_info;
-			latent_action_info.CallbackTarget = this;
-			latent_action_info.UUID = 0;
-			latent_action_info.Linkage = 0;
-
-			UGameplayStatics::LoadStreamLevel(this, instructionlvl3.name, true, true, latent_action_info);
-			current_map = instructionlvl3;
 
 			tick_counter++;
 		}
@@ -259,46 +242,7 @@ void AVRPawn::Tick(float DeltaTime)
 		map_time += DeltaTime;
 	}
 
-	/*
-	else if (!calibration_started && !instruction_audio_started)
-	{
-		UGameplayStatics::PlaySound2D(this, instruction_audio, 5.0f);
-		instruction_audio_started = true;
-	}
-
-	else if (!calibration_started && instruction_audio_finished && !stand_calib_1_started && !standing_calibrated)
-	{
-		UGameplayStatics::PlaySound2D(this, stand_calib_1, 5.0f);
-		stand_calib_1_started = true;
-	}
-
-	else if (!calibration_started && instruction_audio_finished && stand_calib_1_finished && !sit_calib_1_started && standing_calibrated && !sitting_calibrated)
-	{
-		UGameplayStatics::PlaySound2D(this, sit_calib_1, 5.0f);
-		sit_calib_1_started = true;
-	}
-
-
-	else if (standing_calibrated && sitting_calibrated && !commence_standing_trials_2_started && standing_trials_currently)
-	{
-		UGameplayStatics::PlaySound2D(this, commence_standing_trials_2, 5.0f);
-		commence_standing_trials_2_started = true;
-	}
-
-
-	else if (standing_calibrated && sitting_calibrated && !commence_sitting_trials_2 && !standing_trials_currently)
-	{
-		UGameplayStatics::PlaySound2D(this, commence_sitting_trials_2, 5.0f);
-		commence_sitting_trials_2_started = true;
-	} */
-
-	if (commence_standing_trials_2_started)
-	{
-		calculate_movement();
-		skeletal_mesh->SetActive(true);
-	}
-
-	//calculate_movement();
+	calculate_movement();
 }
 
 // Called to bind functionality to input
@@ -338,24 +282,6 @@ void AVRPawn::scale_model_adjustment(float amount)
 
 void AVRPawn::cycle_offset()
 {
-	if (instruction_map_3 && trial_num == 0)
-	{
-		instruction_map_3 = false;
-
-		FLatentActionInfo latent_action_info;
-		latent_action_info.CallbackTarget = this;
-		latent_action_info.UUID = 0;
-		latent_action_info.Linkage = 0;
-		
-		UGameplayStatics::UnloadStreamLevel(this, instructionlvl3.name, latent_action_info, true);
-		skeletal_mesh->SetHiddenInGame(false);
-
-		UE_LOG(LogTemp, Log, TEXT("SKELETAL MESH SHOULD BE VISIBLE\n"));
-
-	}
-
-	commence_standing_trials_2_started = true;
-
 	if (camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
 	{
 		//reset_ik_parameters();
@@ -455,7 +381,7 @@ void AVRPawn::cycle_offset()
 
 	else
 	{
-		UGameplayStatics::PlaySound2D(this, look_straight_ahead, 5.0f);
+		UE_LOG(LogTemp, Log, TEXT("User must look straight ahead to pull the trigger"));
 	}
 }
 
@@ -526,51 +452,10 @@ void AVRPawn::compute_headset_motion_information()
 void AVRPawn::swap_calibration()
 {
 	calibrating_standing = !calibrating_standing;
-	UE_LOG(LogTemp, Log, TEXT("Calibration swapped"));
+	UE_LOG(LogTemp, Log, TEXT("================\nCALIBRATION SWAPPED\n========"));
 	calibration_started = true;
 	sum_height = 0.0f;
 	tick_counter = 0;
-
-	if (instruction_map_1)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Unloading Instruction Map 1"));
-		instruction_map_1 = false;
-		instruction_map_2 = true;
-
-		FLatentActionInfo latent_action_info;
-		latent_action_info.CallbackTarget = this;
-		latent_action_info.UUID = 0;
-		latent_action_info.Linkage = 0;
-
-		UGameplayStatics::UnloadStreamLevel(this, instructionlvl1.name, latent_action_info, true);
-	}
-
-	else if (instruction_map_2)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Unloading Instruction Map 2"));
-		instruction_map_2 = false;
-		instruction_map_3 = true;
-
-		FLatentActionInfo latent_action_info;
-		latent_action_info.CallbackTarget = this;
-		latent_action_info.UUID = 0;
-		latent_action_info.Linkage = 0;
-
-		UGameplayStatics::UnloadStreamLevel(this, instructionlvl2.name, latent_action_info, true);
-	}
-
-	else if (instruction_map_3)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Unloading Instruction Map 3"));
-		instruction_map_3 = false;
-
-		FLatentActionInfo latent_action_info;
-		latent_action_info.CallbackTarget = this;
-		latent_action_info.UUID = 0;
-		latent_action_info.Linkage = 0;
-
-		UGameplayStatics::UnloadStreamLevel(this, instructionlvl3.name, latent_action_info, true);
-	}
 }
 
 void AVRPawn::set_thumbstick_y(float y)
@@ -592,7 +477,34 @@ void AVRPawn::set_thumbstick_y(float y)
 // Caused by pressing B; might remove
 void AVRPawn::toggle_seating()
 {
+	UE_LOG(LogTemp, Log, TEXT("MAPS BEFORE SWAP: "));
+	for (int i = 0; i < map_list.Num(); i++)
+	{
+		UE_LOG(LogTemp, Log, TEXT("map %s\n"), *map_list[i].name.ToString());
+	}
+
 	seated = !seated;
+	
+	// somehow ternary breaks here
+	if (map_list[0].name == map_list_a[0].name)
+	{
+		map_list = map_list_b;
+	}
+	else
+	{
+		map_list = map_list_a;
+	}
+
+
+	maps = map_list;
+
+	UE_LOG(LogTemp, Log, TEXT("MAPS AFTER SWAP: "));
+	for (int i = 0; i < map_list.Num(); i++)
+	{
+		UE_LOG(LogTemp, Log, TEXT("map %s\n"), *map_list[i].name.ToString());
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("================\nSEATING SWAPPED\n========"));
 
 	if(seated)
 	{
@@ -686,50 +598,20 @@ void AVRPawn::initialize_map_data()
 	elven_ruins.floor_height = 0.0f;
 	elven_ruins.spawn_points.Add(FVector(-1480.0f, 270.0f, 8134.5f));
 
+	map_list_a.Add(office); // daytime
+	map_list_a.Add(sun_temple_day); // daytime
+	map_list_a.Add(lightroom_night); // nighttime
+	map_list_a.Add(zen_walkway_wood); // daytime
+	map_list_a.Add(zen_walkway_stone);
+	map_list_a.Add(berlin_flat); // weird one
 
-	map_list.Add(office);
-	map_list.Add(realistic_room);
-	map_list.Add(scifi_bunk);
-	map_list.Add(scifi_hallway);
-	map_list.Add(sun_temple);
-	map_list.Add(sun_temple_day);
-	map_list.Add(lightroom_day);
-	map_list.Add(lightroom_night);
-	map_list.Add(berlin_flat);
-	map_list.Add(zen_walkway_wood);
-	map_list.Add(zen_walkway_stone);
-	map_list.Add(elven_ruins);
-
-
-	instructionlvl1.name = "instructionlvl1";
-	instructionlvl1.rotation = FRotator(0.0f, 0.0f, 0.0f);
-	instructionlvl1.floor_height = 0.0f;
-	instructionlvl1.spawn_points.Add(FVector(0.0f, 0.0f, 0.0f));
-
-	instructionlvl2.name = "instructionlvl2";
-	instructionlvl2.rotation = FRotator(0.0f, 0.0f, 0.0f);
-	instructionlvl2.floor_height = 0.0f;
-	instructionlvl2.spawn_points.Add(FVector(0.0f, 0.0f, 0.0f));
-
-	instructionlvl3.name = "instructionlvl3";
-	instructionlvl3.rotation = FRotator(0.0f, 0.0f, 0.0f);
-	instructionlvl3.floor_height = 0.0f;
-	instructionlvl3.spawn_points.Add(FVector(0.0f, 0.0f, 0.0f));
+	map_list_b.Add(realistic_room); // daytime
+	map_list_b.Add(scifi_hallway); // nighttime
+	map_list_b.Add(sun_temple); // nighttime
+	map_list_b.Add(lightroom_day); // daytime
+	map_list_b.Add(elven_ruins);
 
 }
-
-
-void AVRPawn::check_audio_finished(float end_time, float &audio_time, bool &sound_finished)
-{
-	audio_time += FApp::GetDeltaTime();
-
-	if (audio_time > end_time)
-	{
-		sound_finished = true;
-	}
-}
-
-
 
 float AVRPawn::distance_moved(float x, float y)
 {
@@ -865,8 +747,6 @@ void AVRPawn::calculate_movement()
 
 void AVRPawn::reset_ik_parameters()
 {
-
-
 	last_camera_position.SetLocation(camera->GetRelativeLocation());
 	body_target_position.SetLocation(camera->GetRelativeLocation());
 	body_current_position.SetLocation(camera->GetRelativeLocation());
