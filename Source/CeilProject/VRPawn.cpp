@@ -239,10 +239,10 @@ void AVRPawn::Tick(float DeltaTime)
 			skeletal_mesh->PlayAnimation(standing_animation, true);
 		}
 
-		map_time += DeltaTime;
 	}
+	map_time += DeltaTime;
 
-	calculate_movement();
+	//calculate_movement();
 }
 
 // Called to bind functionality to input
@@ -341,6 +341,8 @@ void AVRPawn::cycle_offset()
 			current_map.spawn_points[0].X - skeletal_attachment_eye_difference.X * camera_forward.X,
 			current_map.spawn_points[0].Y - skeletal_attachment_eye_difference.Y * camera_forward.Y,
 			current_map.spawn_points[0].Z));
+
+		skeletal_mesh->SetWorldLocation(skeletal_attachment_point->GetComponentLocation());
 
 
 		// Reset the IK params
@@ -543,6 +545,14 @@ void AVRPawn::toggle_seating()
 		skeletal_mesh->SetAnimation(standing_animation);
 		skeletal_mesh->PlayAnimation(standing_animation, true);
 	}
+
+	// Unload the current level before the map list is updated
+	FLatentActionInfo latent_action_info;
+	latent_action_info.CallbackTarget = this;
+	latent_action_info.UUID = 0;
+	latent_action_info.Linkage = 0;
+
+	UGameplayStatics::UnloadStreamLevel(this, current_map.name, latent_action_info, true);
 }
 
 
@@ -620,18 +630,18 @@ void AVRPawn::initialize_map_data()
 	elven_ruins.floor_height = 0.0f;
 	elven_ruins.spawn_points.Add(FVector(-1480.0f, 270.0f, 8134.5f));
 
-	map_list_a.Add(office); // daytime
-	map_list_a.Add(sun_temple_day); // daytime
+	map_list_a.Add(scifi_hallway); // nighttime
+	map_list_a.Add(sun_temple); // nighttime
 	map_list_a.Add(lightroom_night); // nighttime
 	map_list_a.Add(zen_walkway_wood); // daytime
-	map_list_a.Add(zen_walkway_stone);
+	//map_list_a.Add(zen_walkway_stone);
 	map_list_a.Add(berlin_flat); // weird one
 
+	map_list_b.Add(office); // daytime
 	map_list_b.Add(realistic_room); // daytime
-	map_list_b.Add(scifi_hallway); // nighttime
-	map_list_b.Add(sun_temple); // nighttime
+	map_list_b.Add(scifi_bunk); // nighttime
 	map_list_b.Add(lightroom_day); // daytime
-	map_list_b.Add(elven_ruins);
+	map_list_b.Add(elven_ruins); // daytime
 
 }
 
