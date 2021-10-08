@@ -124,8 +124,34 @@ void AVRPawn::BeginPlay()
 	skeletal_mesh->SetWorldLocation(skeletal_mesh_location);
 	skeletal_mesh->SetHiddenInGame(true);
 
-	FString group_data = "PART OF GROUP A: " + FString::FromInt(part_of_group_a) + "\n";
-	write_data_to_file(group_data);
+	if (training)
+	{
+		MapData traininglvl;
+		traininglvl.name = "traininglvl";
+		traininglvl.rotation = FRotator(0.0f, 0.0f, 0.0f);
+		traininglvl.floor_height = 29.5f;
+		traininglvl.spawn_points.Add(FVector(0.0f, 0.0f, 0.0f));
+
+		current_map = traininglvl;
+		vr_origin->SetWorldLocation(FVector(
+			current_map.spawn_points[0].X,
+			current_map.spawn_points[0].Y,
+			current_map.spawn_points[0].Z));
+		camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+
+		FLatentActionInfo latent_action_info;
+		latent_action_info.CallbackTarget = this;
+		latent_action_info.UUID = 0;
+		latent_action_info.Linkage = 0;
+
+		UGameplayStatics::LoadStreamLevel(this, current_map.name, true, true, latent_action_info);
+	}
+
+	else
+	{
+		FString group_data = "PART OF GROUP A: " + FString::FromInt(part_of_group_a) + "\n";
+		write_data_to_file(group_data);
+	}
 }
 
 
@@ -136,109 +162,122 @@ void AVRPawn::Tick(float DeltaTime)
 
 	compute_headset_motion_information();
 
-
-	/*if (standing_calibrated && sitting_calibrated && commence_standing_trials_2_started && commence_standing_trials_2_started)
+	if (training)
 	{
-		UGameplayStatics::PlaySound2D(this, calibration_completed, 5.0f);
 
-	}*/
 
-	if (sitting_calibrated)
-	{
-		skeletal_mesh->SetHiddenInGame(false);
+
+		return;
 	}
 
-
-	if (calibration_started)
+	else
 	{
-		// TODO: Don't write out intermediate values to data file
-
-		// Write out the standing height values
-		if (tick_counter == 300 && calibrating_standing)
+		/*if (standing_calibrated && sitting_calibrated && commence_standing_trials_2_started && commence_standing_trials_2_started)
 		{
-			original_standing_camera_height = sum_height / tick_counter;
-			original_camera_height = original_standing_camera_height;
-			UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
-			UE_LOG(LogTemp, Log, TEXT("MIN STANDING HEIGHT: %f\n"), min_standing_height);
-			UE_LOG(LogTemp, Log, TEXT("MAX STANDING HEIGHT: %f\n"), max_standing_height);
-			
-			FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_standing_camera_height) + "\n";
-			data += "Min Standing Eye Height: " + FString::SanitizeFloat(min_standing_height) + "\n";
-			data += "Max Standing Eye Height: " + FString::SanitizeFloat(max_standing_height) + "\n";
-			write_data_to_file(data);
+			UGameplayStatics::PlaySound2D(this, calibration_completed, 5.0f);
 
-			calibration_started = false;
-			standing_calibrated = true;
+		}*/
 
-			tick_counter++;
-		}
-
-		// Write out the sitting height values
-		else if (tick_counter == 300 && !calibrating_standing)
+		if (sitting_calibrated)
 		{
-			original_sitting_camera_height = sum_height / tick_counter;
-			UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
-			UE_LOG(LogTemp, Log, TEXT("MIN SITTING HEIGHT: %f\n"), min_sitting_height);
-			UE_LOG(LogTemp, Log, TEXT("MAX SITTING HEIGHT: %f\n"), max_sitting_height);
-			
-			FString data = "Sitting Eye Height: " + FString::SanitizeFloat(original_sitting_camera_height) + "\n";
-			data += "Min Sitting Eye Height: " + FString::SanitizeFloat(min_sitting_height) + "\n";
-			data += "Max Sitting Eye Height: " + FString::SanitizeFloat(max_sitting_height) + "\n";
-			write_data_to_file(data);
-			
-			calibration_started = false;
-			sitting_calibrated = true;
-
-			tick_counter++;
-		}
-
-		else if (tick_counter < 300)
-		{
-			if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_standing_height && tick_counter > 0)
+			if (use_avatar)
 			{
-				min_standing_height = camera->GetRelativeTransform().GetLocation().Z;
-				UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 300 MINHEIGHT: %f\n"), tick_counter, min_standing_height);
+				skeletal_mesh->SetHiddenInGame(false);
+			}
+		}
+
+
+		if (calibration_started)
+		{
+			// TODO: Don't write out intermediate values to data file
+
+			// Write out the standing height values
+			if (tick_counter == 300 && calibrating_standing)
+			{
+				original_standing_camera_height = sum_height / tick_counter;
+				original_camera_height = original_standing_camera_height;
+				UE_LOG(LogTemp, Log, TEXT("New Standing Camera Height: %f\n"), original_standing_camera_height);
+				UE_LOG(LogTemp, Log, TEXT("MIN STANDING HEIGHT: %f\n"), min_standing_height);
+				UE_LOG(LogTemp, Log, TEXT("MAX STANDING HEIGHT: %f\n"), max_standing_height);
+
+				FString data = "Standing Eye Height: " + FString::SanitizeFloat(original_standing_camera_height) + "\n";
+				data += "Min Standing Eye Height: " + FString::SanitizeFloat(min_standing_height) + "\n";
+				data += "Max Standing Eye Height: " + FString::SanitizeFloat(max_standing_height) + "\n";
+				write_data_to_file(data);
+
+				calibration_started = false;
+				standing_calibrated = true;
+
+				tick_counter++;
 			}
 
-			if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_standing_height && tick_counter > 0)
+			// Write out the sitting height values
+			else if (tick_counter == 300 && !calibrating_standing)
 			{
-				max_standing_height = camera->GetRelativeTransform().GetLocation().Z;
-				UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 300 MAXHEIGHT: %f\n"), tick_counter, max_standing_height);
+				original_sitting_camera_height = sum_height / tick_counter;
+				UE_LOG(LogTemp, Log, TEXT("New Sitting Camera Height: %f\n"), original_sitting_camera_height);
+				UE_LOG(LogTemp, Log, TEXT("MIN SITTING HEIGHT: %f\n"), min_sitting_height);
+				UE_LOG(LogTemp, Log, TEXT("MAX SITTING HEIGHT: %f\n"), max_sitting_height);
+
+				FString data = "Sitting Eye Height: " + FString::SanitizeFloat(original_sitting_camera_height) + "\n";
+				data += "Min Sitting Eye Height: " + FString::SanitizeFloat(min_sitting_height) + "\n";
+				data += "Max Sitting Eye Height: " + FString::SanitizeFloat(max_sitting_height) + "\n";
+				write_data_to_file(data);
+
+				calibration_started = false;
+				sitting_calibrated = true;
+
+				tick_counter++;
 			}
 
-			if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_sitting_height && tick_counter > 0)
+			else if (tick_counter < 300)
 			{
-				min_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
-				UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 300 MINHEIGHT: %f\n"), tick_counter, min_sitting_height);
+				if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_standing_height && tick_counter > 0)
+				{
+					min_standing_height = camera->GetRelativeTransform().GetLocation().Z;
+					UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 300 MINHEIGHT: %f\n"), tick_counter, min_standing_height);
+				}
+
+				if (calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_standing_height && tick_counter > 0)
+				{
+					max_standing_height = camera->GetRelativeTransform().GetLocation().Z;
+					UE_LOG(LogTemp, Log, TEXT("CALIBRATING STANDING EYE HEIGHT: TICK %d OUT OF 300 MAXHEIGHT: %f\n"), tick_counter, max_standing_height);
+				}
+
+				if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z < min_sitting_height && tick_counter > 0)
+				{
+					min_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
+					UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 300 MINHEIGHT: %f\n"), tick_counter, min_sitting_height);
+				}
+
+				if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_sitting_height && tick_counter > 0)
+				{
+					max_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
+					UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 300 MAXHEIGHT: %f\n"), tick_counter, max_sitting_height);
+				}
+
+				sum_height += camera->GetRelativeTransform().GetLocation().Z;
+				tick_counter++;
 			}
 
-			if (!calibrating_standing && camera->GetRelativeTransform().GetLocation().Z > max_sitting_height && tick_counter > 0)
+
+			if (seated)
 			{
-				max_sitting_height = camera->GetRelativeTransform().GetLocation().Z;
-				UE_LOG(LogTemp, Log, TEXT("CALIBRATING SITTING EYE HEIGHT: TICK %d OUT OF 300 MAXHEIGHT: %f\n"), tick_counter, max_sitting_height);
+				original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
+				original_camera_height = original_sitting_camera_height;
+				skeletal_mesh->SetAnimation(sitting_animation);
+				skeletal_mesh->PlayAnimation(sitting_animation, true);
 			}
 
-			sum_height += camera->GetRelativeTransform().GetLocation().Z;
-			tick_counter++;
+			else
+			{
+				original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
+				original_camera_height = original_standing_camera_height;
+				skeletal_mesh->SetAnimation(standing_animation);
+				skeletal_mesh->PlayAnimation(standing_animation, true);
+			}
+
 		}
-
-
-		if (seated)
-		{
-			original_avatar_eyeball_height = original_avatar_sitting_eyeball_height;
-			original_camera_height = original_sitting_camera_height;
-			skeletal_mesh->SetAnimation(sitting_animation);
-			skeletal_mesh->PlayAnimation(sitting_animation, true);
-		}
-
-		else
-		{
-			original_avatar_eyeball_height = original_avatar_standing_eyeball_height;
-			original_camera_height = original_standing_camera_height;
-			skeletal_mesh->SetAnimation(standing_animation);
-			skeletal_mesh->PlayAnimation(standing_animation, true);
-		}
-
 	}
 	map_time += DeltaTime;
 
@@ -249,7 +288,15 @@ void AVRPawn::Tick(float DeltaTime)
 void AVRPawn::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	PlayerInputComponent->BindAction("CycleOffset", IE_Released, this, &AVRPawn::cycle_offset);
+	if (!training)
+	{
+		PlayerInputComponent->BindAction("CycleOffset", IE_Released, this, &AVRPawn::cycle_offset);
+	}
+
+	else
+	{
+		PlayerInputComponent->BindAction("CycleOffset", IE_Released, this, &AVRPawn::cycle_offset_training);
+	}
 	PlayerInputComponent->BindAction("SwapCalibration", IE_Released, this, &AVRPawn::swap_calibration);
 	PlayerInputComponent->BindAction("ToggleSeating", IE_Released, this, &AVRPawn::toggle_seating);
 	PlayerInputComponent->BindAxis("MotionControllerRYAxis", this, &AVRPawn::set_thumbstick_y);
@@ -281,6 +328,25 @@ void AVRPawn::scale_model_adjustment(float amount)
 }
 
 
+void AVRPawn::cycle_offset_training()
+{
+	if (camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
+	{
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->PlayerCameraManager->StartCameraFade(1.0f, 0.0f, 2.0f, FLinearColor(0.0f, 0.0f, 0.0f, 1.0f), false, false);
+
+		vr_origin->SetWorldLocation(FVector(
+			current_map.spawn_points[0].X,
+			current_map.spawn_points[0].Y,
+			current_map.spawn_points[0].Z));
+
+		//vr_origin->SetRelativeRotation(FRotator(current_map.rotation));
+		//vr_origin->SetWorldRotation(FRotator(current_map.rotation));
+
+		//this->SetActorRotation(current_map.rotation);
+	}
+}
+
+
 void AVRPawn::cycle_offset()
 {
 	if (camera->GetForwardVector().Z > -0.15f && camera->GetForwardVector().Z < 0.25f)
@@ -289,11 +355,11 @@ void AVRPawn::cycle_offset()
 
 		// Record the everything for this trial and write to file
 		FString map_time_string = FString::SanitizeFloat(map_time);
-		FString guess_height_string = FString::SanitizeFloat(total_guessed_offset + camera->GetRelativeTransform().GetLocation().Z) + "\t";
-		FString nth_trial = FString::FromInt(trial_num) + "\t";
-		FString current_map_string = current_map.name.ToString() + "\t";
-		FString offset_string = FString::SanitizeFloat(current_offset) + "\t";
-		FString original_camera_height_string = FString::SanitizeFloat(original_camera_height) + "\t";
+		FString guess_height_string = FString::SanitizeFloat(total_guessed_offset + camera->GetRelativeTransform().GetLocation().Z) + ",";
+		FString nth_trial = FString::FromInt(trial_num) + ",";
+		FString current_map_string = current_map.name.ToString() + ",";
+		FString offset_string = FString::SanitizeFloat(current_offset) + ",";
+		FString original_camera_height_string = FString::SanitizeFloat(original_camera_height) + ",";
 		FString data_string = nth_trial + current_map_string + offset_string + guess_height_string + original_camera_height_string + map_time_string + "\n";
 		write_data_to_file(data_string);
 
@@ -328,15 +394,22 @@ void AVRPawn::cycle_offset()
 		current_offset = offset;
 		scale_model_offset(offset);
 
-		// Move camera height by offset
-		camera_attachment_point->SetRelativeLocation(FVector(0.0f, 0.0f, original_camera_location.Z + offset));
 
 		// move skeletal mesh to line eyeball up with camera
 		FVector camera_forward = camera->GetForwardVector();
 		FVector middle_eye_position = skeletal_mesh->GetSocketLocation("cc_base_m_eye");
 		FVector skeletal_position = skeletal_mesh->GetComponentLocation();
 		FVector skeletal_attachment_eye_difference = middle_eye_position - skeletal_position;
-		skeletal_attachment_point->SetRelativeRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
+		FVector vr_origin_loc = vr_origin->GetComponentLocation();
+
+		//vr_origin->SetWorldRotation(FRotator(current_map.rotation));
+		reset_hmd_origin();
+	
+		// Move camera height by offset
+		camera_attachment_point->SetWorldLocation(FVector(vr_origin_loc.X, vr_origin_loc.Y, vr_origin_loc.Z + original_camera_location.Z + offset));
+		//camera_attachment_point->SetRelativeRotation(current_map.rotation);
+
+		skeletal_attachment_point->SetWorldRotation(FRotator(0.0f, camera->GetComponentRotation().Yaw - 90.0f, 0.0f));
 		skeletal_attachment_point->SetWorldLocation(FVector(
 			current_map.spawn_points[0].X - skeletal_attachment_eye_difference.X * camera_forward.X,
 			current_map.spawn_points[0].Y - skeletal_attachment_eye_difference.Y * camera_forward.Y,
@@ -344,6 +417,7 @@ void AVRPawn::cycle_offset()
 
 		skeletal_mesh->SetWorldLocation(skeletal_attachment_point->GetComponentLocation());
 
+		vr_origin->SetRelativeRotation(current_map.rotation);
 
 		// Reset the IK params
 		last_camera_position.SetLocation(camera->GetRelativeLocation());
@@ -558,73 +632,73 @@ void AVRPawn::toggle_seating()
 
 void AVRPawn::initialize_map_data()
 {
-	MapData office;
+	MapData office = MapData();
 	office.name = "BlueprintOffice";
-	office.rotation = FRotator(0.0f, 0.0f, 0.0f);
-	office.floor_height = 100.0f;
-	office.spawn_points.Add(FVector(100.0f, -1199.595703f, 100.0f));
+	office.rotation = FRotator(0.0f, -180.0f, 0.0f);
+	office.floor_height = 201.6f;
+	office.spawn_points.Add(FVector(1690.0f, 450.0f, 201.6f));
 
-	MapData realistic_room;
+	MapData realistic_room = MapData();
 	realistic_room.name = "Room";
-	realistic_room.rotation = FRotator(0.0f, 0.0f, 180.0f);
+	realistic_room.rotation = FRotator(0.0f, -90.0f, 0.0f);
 	realistic_room.floor_height = 0.0f;
-	realistic_room.spawn_points.Add(FVector(-106.195107f, 3177.424316f, 0.0f));
+	realistic_room.spawn_points.Add(FVector(-106.195107f, 2537.424316f, 0.0f));
 
-	MapData scifi_bunk;
+	MapData scifi_bunk = MapData();
 	scifi_bunk.name = "Scifi_Bunk";
-	scifi_bunk.rotation = FRotator(0.0f, 0.0f, 180.0f);
+	scifi_bunk.rotation = FRotator(0.0f, 0.0f, 0.0f);
 	scifi_bunk.floor_height = -12821.8f;
 	scifi_bunk.spawn_points.Add(FVector(-61.999939f, -191.999573, -12821.8f));
 	
-	MapData scifi_hallway;
+	MapData scifi_hallway = MapData();
 	scifi_hallway.name = "SifiW";
 	scifi_hallway.rotation = FRotator(0.0f, 0.0f, 0.0f);
 	scifi_hallway.floor_height = -3512.0f;
 	scifi_hallway.spawn_points.Add(FVector(405.0, -165.0f, -3512.0f));
 
-	MapData sun_temple;
+	MapData sun_temple = MapData();
 	sun_temple.name = "SunTemple";
-	sun_temple.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	sun_temple.rotation = FRotator(0.0f, -90.0f, 0.0f);
 	sun_temple.floor_height = 29.5f;
 	sun_temple.spawn_points.Add(FVector(-200.0f, 23084.0f, 29.5f));
 
-	MapData sun_temple_day;
+	MapData sun_temple_day = MapData();
 	sun_temple_day.name = "SunTempleDay";
 	sun_temple_day.rotation = FRotator(0.0f, 0.0f, 0.0f);
 	sun_temple_day.floor_height = 29.5f;
 	sun_temple_day.spawn_points.Add(FVector(-630.0f, 22400.0f, 29.5f));
 
-	MapData lightroom_day;
+	MapData lightroom_day = MapData();
 	lightroom_day.name = "Lightroom_day";
-	lightroom_day.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	lightroom_day.rotation = FRotator(0.0f, 180.0f, 0.0f);
 	lightroom_day.floor_height = 36.0f;
 	lightroom_day.spawn_points.Add(FVector(0.0f, 0.0f, 36.0f));
 
-	MapData lightroom_night;
+	MapData lightroom_night = MapData();
 	lightroom_night.name = "Lightroom_night";
-	lightroom_night.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	lightroom_night.rotation = FRotator(0.0f, -90.0f, 0.0f);
 	lightroom_night.floor_height = 36.0f;
 	lightroom_night.spawn_points.Add(FVector(0.0f, 0.0f, 36.0f));
 
-	MapData berlin_flat;
+	MapData berlin_flat = MapData();
 	berlin_flat.name = "xoio_berlinflat";
 	berlin_flat.rotation = FRotator(0.0f, 0.0f, 0.0f);
 	berlin_flat.floor_height = 0.0f;
-	berlin_flat.spawn_points.Add(FVector(86.0f, -78.0f, 0.0f));
+	berlin_flat.spawn_points.Add(FVector(-424.0f, -278.0f, 0.0f));
 
-	MapData zen_walkway_wood;
+	MapData zen_walkway_wood = MapData();
 	zen_walkway_wood.name = "Zen_Vis";
-	zen_walkway_wood.rotation = FRotator(0.0f, 0.0f, 0.0f);
+	zen_walkway_wood.rotation = FRotator(0.0f, 180.0f, 0.0f);
 	zen_walkway_wood.floor_height = 12.75f;
-	zen_walkway_wood.spawn_points.Add(FVector(402.5f, 315.0f, 12.75f));
+	zen_walkway_wood.spawn_points.Add(FVector(402.5f, 585.0f, 12.75f));
 
-	MapData zen_walkway_stone;
+	MapData zen_walkway_stone = MapData();
 	zen_walkway_stone.name = "Zen_Vis2";
 	zen_walkway_stone.rotation = FRotator(0.0f, 0.0f, 0.0f);
 	zen_walkway_stone.floor_height = 0.0f;
 	zen_walkway_stone.spawn_points.Add(FVector(40.0f, -1170.0f, 0.0f));
 
-	MapData elven_ruins;
+	MapData elven_ruins = MapData();
 	elven_ruins.name = "ElvenRuins";
 	elven_ruins.rotation = FRotator(0.0f, 0.0f, 0.0f);
 	elven_ruins.floor_height = 0.0f;

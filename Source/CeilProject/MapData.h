@@ -13,4 +13,7 @@ struct CEILPROJECT_API MapData
 	FRotator rotation;				
 	float floor_height;				
 	TArray<FVector> spawn_points;
+	TArray<TTuple<float, float>> intervals;
+
+	MapData();
 };

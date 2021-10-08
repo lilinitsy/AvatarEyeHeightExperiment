@@ -63,6 +63,12 @@ class CEILPROJECT_API AVRPawn : public APawn
 		UPROPERTY(EditAnywhere, Category = "General Parameters")
 		bool male_model = true;
 
+		UPROPERTY(EditAnywhere, Category = "General Parameters")
+		bool use_avatar = true;
+
+		UPROPERTY(EditAnywhere, Category = "General Parameters")
+		bool training = true;
+
 		UPROPERTY(VisibleAnywhere, Category = "Information")
 		float original_avatar_standing_eyeball_height;
 
@@ -95,7 +101,6 @@ class CEILPROJECT_API AVRPawn : public APawn
 		UPROPERTY(EditAnywhere, Category = "Simulation Parameters")
 		bool part_of_group_a; 
 
-	
 
 		AVRPawn();
 		virtual void Tick(float DeltaTime) override;
@@ -104,6 +109,7 @@ class CEILPROJECT_API AVRPawn : public APawn
 		void toggle_seating();
 		void set_thumbstick_y(float y);
 		void set_thumbstick_y_negative(float y);
+		void cycle_offset_training();
 		void cycle_offset();
 		void write_data_to_file(FString data);
 		void scale_model_offset(float offset);
