@@ -93,7 +93,16 @@ AVRPawn::AVRPawn()
 	//standing_trials_currently = FMath::RandRange(0, 1);
 
 	initialize_map_data();
-	map_list = part_of_group_a ? map_list_a : map_list_b;
+
+	if (part_of_group_a)
+	{
+		map_list = map_list_a;
+	}
+
+	else
+	{
+		map_list = map_list_b;
+	}
 	maps = map_list;
 }
 
@@ -355,6 +364,12 @@ void AVRPawn::cycle_offset_training()
 		traininglvl2.floor_height = 29.5f;
 		traininglvl2.spawn_points.Add(FVector(0.0f, 0.0f, 0.0f));
 
+		if (current_map.name == "traininglvl2")
+		{
+			UGameplayStatics::UnloadStreamLevel(this, current_map.name, latent_action_info, true);
+			return;
+		}
+
 
 		current_map = traininglvl2;
 		vr_origin->SetWorldLocation(FVector(
@@ -381,9 +396,19 @@ void AVRPawn::cycle_offset()
 	{
 		//reset_ik_parameters();
 
+		// Calculate new camera height
+		
+		float diff = camera_attachment_point->GetComponentLocation().Z - this_trials_offset_world_height;
+		float diff_in_local = diff + current_offset;
+		float guess_height = original_camera_height + diff_in_local;
+
+		UE_LOG(LogTemp, Log, TEXT("diff: %f\t diff_in_local: %f\t guess_height: %f\n"), diff, diff_in_local, guess_height);
+
+
+
 		// Record the everything for this trial and write to file
 		FString map_time_string = FString::SanitizeFloat(map_time);
-		FString guess_height_string = FString::SanitizeFloat(total_guessed_offset + camera->GetRelativeTransform().GetLocation().Z) + ", ";
+		FString guess_height_string = FString::SanitizeFloat(guess_height) + ", ";
 		FString nth_trial = FString::FromInt(trial_num) + ", ";
 		FString current_map_string = current_map.name.ToString() + ", ";
 		FString offset_string = FString::SanitizeFloat(current_offset) + ", ";
@@ -426,7 +451,6 @@ void AVRPawn::cycle_offset()
 			float offset = FMath::RandRange(offset_range.first, offset_range.second);
 			current_offset = offset;
 			scale_model_offset(offset);
-
 
 			current_map.intervals.RemoveAt(offset_interval_index);
 
@@ -479,6 +503,8 @@ void AVRPawn::cycle_offset()
 				current_map.spawn_points[0].Y,
 				current_map.spawn_points[0].Z + original_camera_location.Z + offset));
 
+			this_trials_offset_world_height = camera_attachment_point->GetComponentLocation().Z;
+
 
 			// Reset the IK params
 			last_camera_position.SetLocation(camera->GetRelativeLocation());
@@ -513,7 +539,6 @@ void AVRPawn::cycle_offset()
 			}
 
 			map_time = 0.0f;
-			total_guessed_offset = 0.0f;
 			trial_num++;
 
 			UE_LOG(LogTemp, Log, TEXT("Trial num: %d\n"), trial_num);
@@ -622,7 +647,6 @@ void AVRPawn::set_thumbstick_y(float y)
 		//UE_LOG(LogTemp, Log, TEXT("Action mapping for SET_THUMBSTICK_Y selected"));
 		float dt = GetWorld()->GetDeltaSeconds();
 		float camera_movement = thumbstick_speed_scale * FGenericPlatformMath::Abs(y) * y * dt;
-		total_guessed_offset += camera_movement;
 
 		FVector camera_location = camera_attachment_point->GetComponentLocation();
 		camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, camera_location.Z + camera_movement));
@@ -638,7 +662,6 @@ void AVRPawn::set_thumbstick_y_negative(float y)
 		UE_LOG(LogTemp, Log, TEXT("Action mapping for thumbstick NEGATIVE selected"));
 		float dt = GetWorld()->GetDeltaSeconds();
 		float camera_movement = thumbstick_speed_scale * FGenericPlatformMath::Abs(y) * y * dt;
-		total_guessed_offset += camera_movement;
 
 		FVector camera_location = camera_attachment_point->GetComponentLocation();
 		camera_attachment_point->SetWorldLocation(FVector(camera_location.X, camera_location.Y, camera_location.Z + camera_movement));

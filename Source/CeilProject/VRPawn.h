@@ -165,13 +165,15 @@ class CEILPROJECT_API AVRPawn : public APawn
 		float map_time = 0.0f;
 
 		// The total offset moved on the controllers. Reset each trial.
-		float total_guessed_offset = 0.0f;
 		int trial_num = 0;
 
 		// Variables to get around oculus height tracking being broken.
 		// Use floor_height* to record floor height
 		bool floor_height_recorded = false;
 		float floor_height = 0.0f;
+
+
+		float this_trials_offset_world_height;
 
 		// Use begin_calibration to signify whether calibration should begin
 
